@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0d1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .box {
+      background: linear-gradient(145deg, #13132a, #1a1a35);
+      border-radius: 20px;
+      padding: 0;
+      width: 340px;
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 80px rgba(232,67,147,0.05);
+      overflow: hidden;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 18px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #555a7a;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .tab.active { color: #ff4d9e; }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 10%; right: 10%;
+      height: 2px;
+      background: #ff4d9e;
+      border-radius: 2px;
+      box-shadow: 0 0 10px #ff4d9e, 0 0 20px rgba(255,77,158,0.5);
+    }
+
+    /* CONTENT */
+    .content { padding: 36px 32px 32px; }
+
+    .section { display: none; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .title {
+      text-align: center;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .heart {
+      color: #ff4d9e;
+      display: inline-block;
+      animation: heartbeat 1.4s ease-in-out infinite;
+      margin-left: 6px;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    /* INPUTS */
+    .field { margin-bottom: 16px; }
+
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .field input::placeholder { color: #3a3d5c; }
+
+    .field input:focus {
+      border-color: #ff4d9e;
+      background: rgba(255,77,158,0.05);
+      box-shadow: 0 0 0 3px rgba(255,77,158,0.1), 0 0 15px rgba(255,77,158,0.15);
+    }
+
+    /* BUTTON */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff4d9e, #c0392b);
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(255,77,158,0.35);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(255,77,158,0.55);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    /* LINKS */
+    .links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .links a {
+      font-size: 0.73rem;
+      color: #ff4d9e;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .links a:hover { opacity: 1; text-shadow: 0 0 10px #ff4d9e; }
+
+    /* MESSAGES */
+    .msg {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .msg.success { background: rgba(0,255,100,0.07); border: 1px solid rgba(0,255,100,0.2); color: #00ff64; }
+    .msg.error   { background: rgba(255,60,60,0.07);  border: 1px solid rgba(255,60,60,0.2);  color: #ff4343; }
+    .msg.info    { background: rgba(255,77,158,0.07); border: 1px solid rgba(255,77,158,0.25); color: #ff4d9e; }
+
+    /* FORGOT DESC */
+    .forgot-desc {
+      color: #555a7a;
+      font-size: 0.78rem;
+      text-align: center;
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    /* LOGGED IN */
+    .loggedIn { display: none; text-align: center; padding: 40px 32px; animation: fadeIn 0.4s ease; }
+    .avatar {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff4d9e, #c0392b);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.9rem; margin: 0 auto 16px;
+      box-shadow: 0 0 30px rgba(255,77,158,0.5);
+    }
+    .loggedIn h3 { color: #fff; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 6px; text-transform: uppercase; }
+    .loggedIn p  { color: #555a7a; font-size: 0.8rem; margin-bottom: 24px; }
+    .btn-logout {
+      width: 100%; padding: 11px;
+      border: 1px solid rgba(255,77,158,0.4); border-radius: 10px;
+      background: transparent; color: #ff4d9e;
+      font-family: 'Poppins', sans-serif; font-size: 0.78rem;
+      letter-spacing: 2px; cursor: pointer; transition: all 0.3s; text-transform: uppercase;
+    }
+    .btn-logout:hover { background: rgba(255,77,158,0.08); border-color: #ff4d9e; }
+  </style>
+</head>
+<body>
+
+<div class="box" id="mainBox">
+
+  <!-- TABS -->
+  <div class="tabs" id="tabsBar">
+    <button class="tab active" onclick="switchTab('login')">Connexion</button>
+    <button class="tab" onclick="switchTab('register')">S'inscrire</button>
+  </div>
+
+  <div class="content">
+
+    <!-- LOGIN -->
+    <div class="section active" id="loginSection">
+      <div class="title">Sign In <span class="heart">♥</span></div>
+      <div class="field"><input type="email"    id="loginEmail" placeholder="Adresse mail" /></div>
+      <div class="field"><input type="password" id="loginPass"  placeholder="Mot de passe" /></div>
+      <button class="btn" onclick="login()">Se connecter</button>
+      <div class="links">
+        <a onclick="showForgot()">Forgot Password</a>
+      </div>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+
+    <!-- SIGN UP -->
+    <div class="section" id="registerSection">
+      <div class="title">Sign Up <span class="heart">♥</span></div>
+      <div class="field"><input type="email"    id="regEmail"      placeholder="Adresse mail" /></div>
+      <div class="field"><input type="password" id="regPass"        placeholder="Mot de passe" /></div>
+      <div class="field"><input type="password" id="regPassConfirm" placeholder="Confirmer mot de passe" /></div>
+      <button class="btn" onclick="register()">Créer mon compte</button>
+      <div class="msg" id="registerMsg"></div>
+    </div>
+
+    <!-- FORGOT -->
+    <div class="section" id="forgotSection">
+      <div class="title">Reset <span class="heart">♥</span></div>
+      <p class="forgot-desc">Entre ton adresse mail, on t'envoie un lien de réinitialisation.</p>
+      <div class="field"><input type="email" id="forgotEmail" placeholder="Adresse mail" /></div>
+      <button class="btn" onclick="forgotPassword()">Envoyer</button>
+      <div class="links">
+        <a onclick="switchTab('login')">← Retour</a>
+      </div>
+      <div class="msg" id="forgotMsg"></div>
+    </div>
+
+  </div>
+
+  <!-- LOGGED IN -->
+  <div class="loggedIn" id="loggedIn">
+    <div class="avatar">👾</div>
+    <h3>Connecté !</h3>
+    <p id="loggedEmail"></p>
+    <button class="btn-logout" onclick="logout()">Se déconnecter</button>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",
+    authDomain: "monlogin-41e0e.firebaseapp.com",
+    projectId: "monlogin-41e0e",
+    storageBucket: "monlogin-41e0e.firebasestorage.app",
+    messagingSenderId: "699665895535",
+    appId: "1:699665895535:web:46931d57611ad69e1a3d9a",
+    measurementId: "G-8BCVYH59B5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+    el.style.display = 'block';
+  }
+
+  function hideAllMsgs() {
+    document.querySelectorAll('.msg').forEach(m => m.style.display = 'none');
+  }
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tab === 'login' ? 'loginSection' : 'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display = 'flex';
+    hideAllMsgs();
+  }
+
+  window.showForgot = function() {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display = 'none';
+    hideAllMsgs();
+  }
+
+  window.register = async function() {
+    const email   = document.getElementById('regEmail').value.trim();
+    const pass    = document.getElementById('regPass').value;
+    const confirm = document.getElementById('regPassConfirm').value;
+    if (!email || !pass || !confirm) { showMsg('registerMsg', '⚠️ Remplis tous les champs !', 'error'); return; }
+    if (pass.length < 6)             { showMsg('registerMsg', '⚠️ Mot de passe min 6 caractères.', 'error'); return; }
+    if (pass !== confirm)            { showMsg('registerMsg', '❌ Mots de passe différents.', 'error'); return; }
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+      showMsg('registerMsg', '✅ Compte créé ! Tu peux te connecter.', 'success');
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPass').value = '';
+      document.getElementById('regPassConfirm').value = '';
+      setTimeout(() => window.switchTab('login'), 1500);
+    } catch(e) {
+      if (e.code === 'auth/email-already-in-use') showMsg('registerMsg', '❌ Email déjà utilisé.', 'error');
+      else if (e.code === 'auth/invalid-email')   showMsg('registerMsg', '⚠️ Email invalide.', 'error');
+      else showMsg('registerMsg', '❌ ' + e.message, 'error');
+    }
+  }
+
+  window.login = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    if (!email || !pass) { showMsg('loginMsg', '⚠️ Remplis tous les champs !', 'error'); return; }
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, pass);
+      document.getElementById('mainBox').querySelector('.tabs').style.display = 'none';
+      document.getElementById('mainBox').querySelector('.content').style.display = 'none';
+      document.getElementById('loggedIn').style.display = 'block';
+      document.getElementById('loggedEmail').textContent = result.user.email;
+    } catch(e) {
+      showMsg('loginMsg', '❌ Email ou mot de passe incorrect.', 'error');
+    }
+  }
+
+  window.forgotPassword = async function() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { showMsg('forgotMsg', '⚠️ Entre ton adresse mail !', 'error'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showMsg('forgotMsg', '📧 Email envoyé ! Vérifie ta boîte mail.', 'info');
+      document.getElementById('forgotEmail').value = '';
+      setTimeout(() => window.switchTab('login'), 2500);
+    } catch(e) {
+      if (e.code === 'auth/user-not-found') showMsg('forgotMsg', '❌ Aucun compte avec cet email.', 'error');
+      else showMsg('forgotMsg', '❌ ' + e.message, 'error');
+    }
+  }
+
+  window.logout = async function() {
+    await signOut(auth);
+    document.getElementById('loggedIn').style.display = 'none';
+    document.getElementById('mainBox').querySelector('.tabs').style.display = 'flex';
+    document.getElementById('mainBox').querySelector('.content').style.display = 'block';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value = '';
+    window.switchTab('login');
+  }
+</script>
+</body>
+</html>
