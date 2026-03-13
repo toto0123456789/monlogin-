@@ -436,9 +436,8 @@
   }
 
   function pickAvatar(emoji) {
-    selectedAvatar = emoji;
-    document.getElementById('dashAvatarContent').textContent = emoji;
-    document.getElementById('avatarOverlay').classList.remove('open');
+    if(window.pickAvatarAndSave) window.pickAvatarAndSave(emoji);
+    else { selectedAvatar=emoji; document.getElementById('dashAvatarContent').textContent=emoji; document.getElementById('avatarOverlay').classList.remove('open'); }
   }
 
   // THEME
@@ -509,17 +508,7 @@
     document.getElementById('notifPromoLabel').textContent = l.notifPromo;
   }
 
-  // PSEUDO local
-  let userPseudo='Joueur';
-  function savePseudo(){
-    const val=document.getElementById('setPseudo').value.trim();
-    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
-    userPseudo=val;
-    document.getElementById('dashPseudo').textContent=val;
-    document.getElementById('infoPseudo').textContent=val;
-    document.getElementById('setPseudo').value='';
-    showMsg('pseudoMsg','✅ Pseudo mis à jour !','success');
-  }
+  // PSEUDO — géré par Firebase (voir script module)
 
   // NOTIFICATIONS
   function saveNotif(){
@@ -684,6 +673,33 @@
 
   function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
 
+  // Charge pseudo + avatar depuis localStorage
+  function loadUserProfile(email) {
+    const key = 'profile_' + email;
+    const saved = localStorage.getItem(key);
+    if(saved) {
+      const data = JSON.parse(saved);
+      if(data.pseudo){
+        document.getElementById('dashPseudo').textContent=data.pseudo;
+        document.getElementById('infoPseudo').textContent=data.pseudo;
+      }
+      if(data.avatar){
+        selectedAvatar=data.avatar;
+        document.getElementById('dashAvatarContent').textContent=data.avatar;
+      }
+    }
+  }
+
+  // Sauvegarde pseudo + avatar dans localStorage
+  function saveProfile(field, value) {
+    const email = auth.currentUser?.email;
+    if(!email) return;
+    const key = 'profile_' + email;
+    const existing = JSON.parse(localStorage.getItem(key)||'{}');
+    existing[field] = value;
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
+
   window.switchTab=function(tab){
     document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
     document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -700,9 +716,10 @@
     document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
     document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
   }
+
   window.register=async function(){
     const email=document.getElementById('regEmail').value.trim();
-    const pseudo=document.getElementById('regPseudo').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
     const pass=document.getElementById('regPass').value;
     const conf=document.getElementById('regPassConfirm').value;
     if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
@@ -710,12 +727,14 @@
     if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
     try{
       await createUserWithEmailAndPassword(auth,email,pass);
-      if(pseudo){document.getElementById('dashPseudo').textContent=pseudo;document.getElementById('infoPseudo').textContent=pseudo;}
+      // Sauvegarder pseudo dans localStorage
+      localStorage.setItem('profile_'+email, JSON.stringify({pseudo, avatar:'👾'}));
       showMsg('registerMsg','✅ Compte créé !','success');
       ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
       setTimeout(()=>window.switchTab('login'),1500);
     }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
   }
+
   window.login=async function(){
     const email=document.getElementById('loginEmail').value.trim();
     const pass=document.getElementById('loginPass').value;
@@ -728,8 +747,29 @@
       document.getElementById('dashEmailText').textContent=result.user.email;
       document.getElementById('infoEmail').textContent=result.user.email;
       document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      // Charger pseudo + avatar
+      loadUserProfile(result.user.email);
     }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
   }
+
+  window.savePseudo=async function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    saveProfile('pseudo', val);
+    document.getElementById('dashPseudo').textContent=val;
+    document.getElementById('infoPseudo').textContent=val;
+    document.getElementById('setPseudo').value='';
+    showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
+  }
+
+  // Avatar sauvegardé via localStorage
+  window.pickAvatarAndSave=function(emoji){
+    selectedAvatar=emoji;
+    document.getElementById('dashAvatarContent').textContent=emoji;
+    document.getElementById('avatarOverlay').classList.remove('open');
+    saveProfile('avatar', emoji);
+  }
+
   window.forgotPassword=async function(){
     const email=document.getElementById('forgotEmail').value.trim();
     if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
@@ -762,9 +802,11 @@
     const pass=document.getElementById('deletePass').value;
     if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
     try{
-      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      const email=auth.currentUser.email;
+      const cred=EmailAuthProvider.credential(email,pass);
       await reauthenticateWithCredential(auth.currentUser,cred);
       await deleteUser(auth.currentUser);
+      localStorage.removeItem('profile_'+email);
       document.getElementById('confirmOverlay').classList.remove('open');
       document.getElementById('dashboard').style.display='none';
       document.getElementById('tabsBar').style.display='flex';
