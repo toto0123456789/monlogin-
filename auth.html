@@ -145,8 +145,18 @@
     .add-form-title{color:var(--accent);font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
     .add-form .field{margin-bottom:12px;}
     .add-form .field input{padding:10px 14px;font-size:0.8rem;}
-    .btn-add{width:100%;padding:11px;border:1px dashed rgba(255,77,158,0.4);border-radius:10px;background:transparent;color:var(--accent);font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.3s;letter-spacing:1px;}
+    .btn-add{width:100%;padding:11px;border:1px dashed rgba(255,77,158,0.4)!important;border-radius:10px;background:transparent!important;color:#ff4d9e!important;font-family:'Poppins',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.3s;letter-spacing:0!important;text-transform:none!important;}
     .btn-add:hover{background:rgba(255,77,158,0.08);}
+    .ami-empty{color:var(--muted);font-size:0.8rem;text-align:center;padding:24px 0;line-height:1.6;}
+    .ami-item{background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+    .ami-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .ami-info{flex:1;}
+    .ami-pseudo{color:var(--text);font-size:0.85rem;font-weight:600;}
+    .ami-tag{color:var(--muted);font-size:0.72rem;margin-top:2px;}
+    .ami-jeu{color:var(--accent);font-size:0.68rem;margin-top:2px;}
+    .ami-actions{display:flex;gap:6px;flex-shrink:0;}
+    .add-ami-form{background:rgba(255,77,158,0.05);border:1px solid rgba(255,77,158,0.2);border-radius:12px;padding:16px;margin-bottom:14px;display:none;animation:fadeIn 0.3s ease;}
+    .add-ami-form.open{display:block!important;}
     .btn-save-sm{flex:1;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
     .btn-cancel-sm{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-family:'Poppins',sans-serif;font-size:0.75rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase;}
     .btn-cancel-sm:hover{border-color:var(--accent);color:var(--accent);}
@@ -227,9 +237,11 @@
       </div>
       <div class="dash-pseudo" id="dashPseudo">Joueur</div>
       <div class="dash-email-text" id="dashEmailText"></div>
+      <div class="dash-email-text" id="dashGamertag" style="color:var(--accent);font-size:0.72rem;margin-top:2px;display:none;">🎮 <span id="dashGamertagText"></span></div>
     </div>
     <div class="dash-tabs">
       <button class="dash-tab active" id="dtJeux" onclick="switchDash('jeux')">🎮 Jeux</button>
+      <button class="dash-tab" id="dtAmis" onclick="switchDash('amis')">👥 Amis</button>
       <button class="dash-tab" id="dtParam" onclick="switchDash('parametres')">⚙️ Paramètres</button>
     </div>
     <div class="dash-content">
@@ -243,6 +255,23 @@
         <div class="no-result" id="noResult" style="display:none;">Aucun jeu trouvé 😕</div>
       </div>
 
+
+      <div class="dash-section" id="amisSection">
+        <div id="amisList"></div>
+        <div class="add-ami-form" id="addAmiForm" style="display:none;">
+          <div class="add-form-title">➕ Ajouter un ami</div>
+          <div class="field"><input type="text" id="amiPseudo" placeholder="Pseudo"/></div>
+          <div class="field"><input type="text" id="amiTag" placeholder="Gamertag (ex: Player#1234)"/></div>
+          <div class="field"><input type="text" id="amiJeu" placeholder="Jeu favori (optionnel)"/></div>
+          <div class="field"><input type="text" id="amiEmoji" placeholder="Avatar emoji (ex: 🦊)"/></div>
+          <div class="form-btns">
+            <button class="btn-save-sm" onclick="confirmAddAmi()">💾 Sauvegarder</button>
+            <button class="btn-cancel-sm" onclick="cancelAddAmi()">Annuler</button>
+          </div>
+        </div>
+        <button class="btn-add" id="btnAddAmi" onclick="showAddAmiForm()" style="text-transform:none!important;letter-spacing:0!important;color:var(--accent)!important;">➕ Ajouter un ami</button>
+      </div>
+
       <div class="dash-section" id="parametresSection">
 
         <!-- INFOS COMPTE -->
@@ -250,6 +279,7 @@
           <div class="setting-title">📋 Infos du compte</div>
           <div class="info-row"><span class="info-key">Pseudo</span><span class="info-val" id="infoPseudo">—</span></div>
           <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="infoEmail">—</span></div>
+          <div class="info-row"><span class="info-key">Gamertag</span><span class="info-val" id="infoGamertag">—</span></div>
           <div class="info-row"><span class="info-key">Membre depuis</span><span class="info-val" id="infoDate">—</span></div>
           <div class="info-row"><span class="info-key">2FA</span><span class="info-val"><span id="info2fa" class="badge off">OFF</span></span></div>
           <div class="info-row"><span class="info-key">Sauvegardes</span><span class="info-val" id="infoSaves">0 jeu(x)</span></div>
@@ -261,6 +291,14 @@
           <div class="field"><input type="text" id="setPseudo" placeholder="Nouveau pseudo"/></div>
           <button class="btn-sm" onclick="savePseudo()">Mettre à jour</button>
           <div class="msg" id="pseudoMsg"></div>
+        </div>
+
+        <!-- GAMERTAG -->
+        <div class="setting-block">
+          <div class="setting-title">🎮 Gamertag</div>
+          <div class="field"><input type="text" id="setGamertag" placeholder="Ton gamertag (ex: Shadow#1234)"/></div>
+          <button class="btn-sm" onclick="saveGamertag()">Mettre à jour</button>
+          <div class="msg" id="gamertagMsg"></div>
         </div>
 
         <!-- EMAIL -->
@@ -510,6 +548,20 @@
 
   // PSEUDO — géré par Firebase (voir script module)
 
+  // GAMERTAG
+  function saveGamertag(){
+    const val=document.getElementById('setGamertag').value.trim();
+    if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
+    document.getElementById('dashGamertagText').textContent=val;
+    document.getElementById('dashGamertag').style.display='block';
+    document.getElementById('infoGamertag').textContent=val;
+    document.getElementById('setGamertag').value='';
+    // Sauvegarder dans localStorage
+    const email=document.querySelector('#dashEmailText')?.textContent;
+    if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.gamertag=val;localStorage.setItem(key,JSON.stringify(ex));}
+    showMsg('gamertagMsg','✅ Gamertag sauvegardé !','success');
+  }
+
   // NOTIFICATIONS
   function saveNotif(){
     showMsg('notifMsg','✅ Préférences sauvegardées !','success');
@@ -664,7 +716,41 @@
   function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
   function hideAllMsgs(){document.querySelectorAll('.msg').forEach(m=>m.style.display='none');}
 
-  window.addEventListener('load',()=>renderGames(GAMES));
+  // AMIS
+  let amisList = [], editingAmiId = null;
+  function renderAmis(){
+    const list=document.getElementById('amisList');
+    if(!amisList.length){list.innerHTML='<div class="ami-empty">Aucun ami ajouté.<br>Ajoute-en un ! 👇</div>';return;}
+    list.innerHTML=amisList.map(a=>`
+      <div class="ami-item">
+        <div class="ami-avatar">${a.emoji||'👾'}</div>
+        <div class="ami-info">
+          <div class="ami-pseudo">${a.pseudo}</div>
+          <div class="ami-tag">🎮 ${a.tag}</div>
+          ${a.jeu?`<div class="ami-jeu">⭐ ${a.jeu}</div>`:''}
+        </div>
+        <div class="ami-actions">
+          <button class="btn-icon" onclick="editAmi('${a.id}')">✏️</button>
+          <button class="btn-icon" onclick="deleteAmi('${a.id}')">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+  function showAddAmiForm(){editingAmiId=null;['amiPseudo','amiTag','amiJeu','amiEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  function cancelAddAmi(){editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';}
+  function confirmAddAmi(){
+    const pseudo=document.getElementById('amiPseudo').value.trim();
+    const tag=document.getElementById('amiTag').value.trim();
+    const jeu=document.getElementById('amiJeu').value.trim();
+    const emoji=document.getElementById('amiEmoji').value.trim()||'👾';
+    if(!pseudo||!tag){alert('⚠️ Pseudo et Gamertag requis !');return;}
+    if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1)amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji};}
+    else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji});
+    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();
+  }
+  function editAmi(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  function deleteAmi(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();}
+
+  window.addEventListener('load',()=>{renderGames(GAMES);renderAmis();});
 </script>
 
 <script type="module">
@@ -689,6 +775,11 @@
       if(data.avatar){
         selectedAvatar=data.avatar;
         document.getElementById('dashAvatarContent').textContent=data.avatar;
+      }
+      if(data.gamertag){
+        document.getElementById('dashGamertagText').textContent=data.gamertag;
+        document.getElementById('dashGamertag').style.display='block';
+        document.getElementById('infoGamertag').textContent=data.gamertag;
       }
     }
   }
@@ -715,9 +806,11 @@
     document.getElementById('tabsBar').style.display='none';
   }
   window.switchDash=function(tab){
-    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
-    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+    if(tab==='jeux'){document.getElementById('dtJeux').classList.add('active');document.getElementById('jeuxSection').classList.add('active');}
+    else if(tab==='amis'){document.getElementById('dtAmis').classList.add('active');document.getElementById('amisSection').classList.add('active');}
+    else{document.getElementById('dtParam').classList.add('active');document.getElementById('parametresSection').classList.add('active');}
   }
 
   window.register=async function(){
