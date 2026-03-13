@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#0d0d1a; --card:#13132a; --card2:#1a1a35;
+      --border:rgba(255,255,255,0.07); --text:#fff; --muted:#555a7a;
+      --accent:#ff4d9e; --accent2:#c0392b;
+      --input-bg:rgba(255,255,255,0.04); --input-border:rgba(255,255,255,0.08);
+    }
+    .light{--bg:#f0f0f8;--card:#fff;--card2:#f5f5ff;--border:rgba(0,0,0,0.08);--text:#1a1a2e;--muted:#8888aa;--input-bg:rgba(0,0,0,0.04);--input-border:rgba(0,0,0,0.12);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;transition:background 0.3s;}
+    .box{background:linear-gradient(145deg,var(--card),var(--card2));border-radius:20px;width:360px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.4);overflow:hidden;transition:all 0.3s;}
+    .tabs{display:flex;border-bottom:1px solid var(--border);}
+    .tab{flex:1;padding:18px;text-align:center;font-size:0.85rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;letter-spacing:1px;transition:all 0.3s;position:relative;}
+    .tab.active{color:var(--accent);}
+    .tab.active::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 10px var(--accent);}
+    .content{padding:36px 32px 32px;}
+    .section{display:none;animation:fadeIn 0.3s ease;}
+    .section.active{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .title{text-align:center;color:var(--text);font-size:1rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;margin-bottom:28px;}
+    .heart{color:var(--accent);display:inline-block;animation:heartbeat 1.4s ease-in-out infinite;margin-left:6px;}
+    @keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+    .field{margin-bottom:16px;}
+    .field input,.field select{width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.85rem;outline:none;transition:all 0.3s;}
+    .field input::placeholder{color:var(--muted);}
+    .field input:focus,.field select:focus{border-color:var(--accent);background:rgba(255,77,158,0.05);box-shadow:0 0 0 3px rgba(255,77,158,0.1);}
+    .btn{width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:4px;transition:all 0.3s;box-shadow:0 4px 20px rgba(255,77,158,0.35);}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,77,158,0.55);}
+    .links{display:flex;justify-content:center;gap:20px;margin-top:16px;}
+    .links a{font-size:0.73rem;color:var(--accent);cursor:pointer;opacity:0.7;transition:all 0.3s;text-decoration:none;}
+    .links a:hover{opacity:1;}
+    .msg{margin-top:14px;padding:10px;border-radius:8px;font-size:0.76rem;text-align:center;display:none;animation:fadeIn 0.3s ease;}
+    .msg.success{background:rgba(0,255,100,0.07);border:1px solid rgba(0,255,100,0.2);color:#00ff64;}
+    .msg.error{background:rgba(255,60,60,0.07);border:1px solid rgba(255,60,60,0.2);color:#ff4343;}
+    .msg.info{background:rgba(255,77,158,0.07);border:1px solid rgba(255,77,158,0.25);color:var(--accent);}
+    .forgot-desc{color:var(--muted);font-size:0.78rem;text-align:center;margin-bottom:18px;line-height:1.6;}
+    .pass-wrap{position:relative;}
+    .pass-wrap input{padding-right:42px!important;}
+    .pass-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;font-size:1rem;opacity:0.5;transition:all 0.2s;}
+    .pass-toggle:hover{opacity:1;}
+
+    /* DASHBOARD */
+    .dashboard{display:none;animation:fadeIn 0.4s ease;}
+    .dash-header{background:linear-gradient(135deg,rgba(255,77,158,0.15),rgba(192,57,43,0.1));padding:20px 32px 16px;border-bottom:1px solid var(--border);text-align:center;}
+    .dash-avatar-wrap{position:relative;width:70px;margin:0 auto 8px;cursor:pointer;}
+    .dash-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 25px rgba(255,77,158,0.4);overflow:hidden;transition:all 0.3s;}
+    .avatar-edit{position:absolute;bottom:0;right:0;background:var(--accent);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
+    .dash-pseudo{color:var(--text);font-size:0.95rem;font-weight:600;}
+    .dash-email-text{color:var(--muted);font-size:0.72rem;margin-top:2px;}
+    .dash-tabs{display:flex;border-bottom:1px solid var(--border);}
+    .dash-tab{flex:1;padding:12px 6px;text-align:center;font-size:0.72rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;letter-spacing:0.5px;transition:all 0.3s;position:relative;}
+    .dash-tab.active{color:var(--accent);}
+    .dash-tab.active::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 10px var(--accent);}
+    .dash-content{padding:20px 24px 24px;max-height:420px;overflow-y:auto;}
+    .dash-content::-webkit-scrollbar{width:4px;}
+    .dash-content::-webkit-scrollbar-thumb{background:#ff4d9e44;border-radius:2px;}
+    .dash-section{display:none;animation:fadeIn 0.3s ease;}
+    .dash-section.active{display:block;}
+
+    /* SEARCH */
+    .search-wrap{position:relative;margin-bottom:16px;}
+    .search-wrap input{width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:11px 16px 11px 38px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.82rem;outline:none;transition:all 0.3s;}
+    .search-wrap input::placeholder{color:var(--muted);}
+    .search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,158,0.1);}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:0.9rem;pointer-events:none;}
+    .no-result{color:var(--muted);font-size:0.8rem;text-align:center;padding:20px 0;}
+    .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .game-card{background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;}
+    .game-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 15px rgba(255,77,158,0.2);}
+    .game-card.has-saves{border-color:rgba(0,255,100,0.3);}
+    .save-count{position:absolute;top:6px;right:8px;background:var(--accent);color:#fff;font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .game-card .icon{font-size:1.6rem;margin-bottom:6px;}
+    .game-card .name{color:var(--text);font-size:0.72rem;font-weight:600;}
+    .game-card .status{color:var(--muted);font-size:0.65rem;margin-top:2px;}
+
+    /* SETTINGS */
+    .setting-block{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+    .setting-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+    .setting-title{color:var(--accent);font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;font-weight:700;}
+    .setting-block .field{margin-bottom:10px;}
+    .setting-block .field input,.setting-block .field select{padding:10px 14px;font-size:0.8rem;}
+    .btn-sm{width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;}
+    .btn-sm:hover{transform:translateY(-1px);}
+    .btn-danger{width:100%;padding:10px;border:1px solid rgba(255,60,60,0.4);border-radius:10px;background:transparent;color:#ff4343;font-family:'Poppins',sans-serif;font-size:0.75rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;}
+    .btn-danger:hover{background:rgba(255,60,60,0.1);}
+    .btn-logout-dash{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--muted);font-family:'Poppins',sans-serif;font-size:0.75rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;}
+    .btn-logout-dash:hover{border-color:var(--accent);color:var(--accent);}
+    .toggle-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .toggle-label{color:var(--text);font-size:0.8rem;}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .slider{position:absolute;cursor:pointer;inset:0;background:var(--input-border);border-radius:24px;transition:0.3s;}
+    .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;}
+    input:checked+.slider{background:var(--accent);box-shadow:0 0 10px rgba(255,77,158,0.4);}
+    input:checked+.slider::before{transform:translateX(20px);}
+
+    /* INFOS COMPTE */
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+    .info-row:last-child{border-bottom:none;}
+    .info-key{color:var(--muted);font-size:0.72rem;}
+    .info-val{color:var(--text);font-size:0.78rem;font-weight:600;}
+
+    /* COULEURS */
+    .color-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+    .color-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;transition:all 0.2s;border:3px solid transparent;}
+    .color-dot.active,.color-dot:hover{transform:scale(1.2);border-color:#fff;}
+
+    /* MODAL AVATARS */
+    .avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+    .av-item{width:50px;height:50px;border-radius:50%;background:var(--input-bg);border:2px solid var(--input-border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;transition:all 0.2s;margin:0 auto;}
+    .av-item:hover,.av-item.selected{border-color:var(--accent);background:rgba(255,77,158,0.1);transform:scale(1.1);}
+
+    /* MODAL JEUX */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    .modal{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:18px;padding:24px;width:310px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.8);animation:slideUp 0.3s ease;}
+    .modal::-webkit-scrollbar{width:4px;}
+    .modal::-webkit-scrollbar-thumb{background:#ff4d9e44;border-radius:2px;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .modal-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+    .modal-icon{font-size:2rem;}
+    .modal-title{color:var(--text);font-size:0.95rem;font-weight:700;}
+    .modal-sub{color:var(--muted);font-size:0.72rem;margin-top:2px;}
+    .save-item{background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:14px;margin-bottom:10px;}
+    .save-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+    .save-lbl{color:var(--accent);font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    .save-actions{display:flex;gap:6px;}
+    .btn-icon{background:transparent;border:none;cursor:pointer;font-size:0.9rem;opacity:0.5;transition:all 0.2s;}
+    .btn-icon:hover{opacity:1;transform:scale(1.2);}
+    .save-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+    .save-row:last-child{margin-bottom:0;}
+    .save-key{color:var(--muted);font-size:0.7rem;}
+    .save-val{color:var(--text);font-size:0.78rem;font-weight:600;display:flex;align-items:center;gap:6px;}
+    .eye-btn{background:transparent;border:none;cursor:pointer;font-size:0.85rem;opacity:0.5;transition:all 0.2s;}
+    .eye-btn:hover{opacity:1;}
+    .add-form{background:rgba(255,77,158,0.05);border:1px solid rgba(255,77,158,0.2);border-radius:12px;padding:16px;margin-bottom:10px;display:none;animation:fadeIn 0.3s ease;}
+    .add-form.open{display:block;}
+    .add-form-title{color:var(--accent);font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+    .add-form .field{margin-bottom:12px;}
+    .add-form .field input{padding:10px 14px;font-size:0.8rem;}
+    .btn-add{width:100%;padding:11px;border:1px dashed rgba(255,77,158,0.4);border-radius:10px;background:transparent;color:var(--accent);font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.3s;letter-spacing:1px;}
+    .btn-add:hover{background:rgba(255,77,158,0.08);}
+    .btn-save-sm{flex:1;padding:10px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+    .btn-cancel-sm{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-family:'Poppins',sans-serif;font-size:0.75rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase;}
+    .btn-cancel-sm:hover{border-color:var(--accent);color:var(--accent);}
+    .form-btns{display:flex;gap:8px;margin-top:4px;}
+    .btn-close-modal{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--muted);font-family:'Poppins',sans-serif;font-size:0.78rem;letter-spacing:1px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;margin-top:10px;}
+    .btn-close-modal:hover{border-color:var(--accent);color:var(--accent);}
+    .empty-saves{color:var(--muted);font-size:0.8rem;text-align:center;padding:16px 0 8px;}
+    .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;}
+    .confirm-overlay.open{display:flex;}
+    .confirm-box{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid rgba(255,60,60,0.3);border-radius:16px;padding:28px 24px;width:280px;text-align:center;animation:slideUp 0.3s ease;}
+    .confirm-box h3{color:var(--text);font-size:0.95rem;margin-bottom:10px;}
+    .confirm-box p{color:var(--muted);font-size:0.78rem;margin-bottom:16px;line-height:1.5;}
+    .confirm-btns{display:flex;gap:10px;margin-top:12px;}
+    .tfa-code{display:flex;gap:8px;justify-content:center;margin:16px 0;}
+    .tfa-code input{width:42px;height:48px;text-align:center;font-size:1.2rem;font-weight:700;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;color:var(--text);outline:none;font-family:'Poppins',sans-serif;}
+    .tfa-code input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,158,0.1);}
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-left:8px;}
+    .badge.on{background:rgba(0,255,100,0.15);color:#00ff64;border:1px solid rgba(0,255,100,0.3);}
+    .badge.off{background:rgba(255,77,158,0.1);color:var(--accent);border:1px solid rgba(255,77,158,0.2);}
+    /* LANG SELECTOR */
+    .lang-selector{position:relative;}
+    .lang-selected{display:flex;align-items:center;gap:10px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:all 0.3s;color:var(--text);font-size:0.82rem;font-weight:500;user-select:none;}
+    .lang-selected:hover{border-color:var(--accent);}
+    .lang-arrow{margin-left:auto;font-size:0.75rem;color:var(--muted);transition:transform 0.25s;}
+    .lang-arrow.open{transform:rotate(180deg);}
+    .lang-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--accent);border-radius:12px;overflow:hidden;z-index:99;box-shadow:0 10px 40px rgba(0,0,0,0.5);}
+    .lang-menu.open{display:block;animation:fadeIn 0.2s ease;}
+    .lang-option{display:flex;align-items:center;gap:10px;padding:11px 16px;color:var(--text);font-size:0.8rem;cursor:pointer;transition:background 0.2s;}
+    .lang-option:hover{background:rgba(255,77,158,0.12);color:var(--accent);}
+    .lang-option.active-lang{color:var(--accent);font-weight:600;background:rgba(255,77,158,0.07);}
+    /* 2FA DIGITS */
+    .tfa-inputs{display:flex;gap:7px;justify-content:center;margin:14px 0 4px;}
+    .tfa-digit{width:38px;height:46px;text-align:center;font-size:1.2rem;font-weight:700;background:var(--input-bg);border:2px solid var(--input-border);border-radius:10px;color:var(--text);outline:none;font-family:'Poppins',sans-serif;transition:all 0.2s;}
+    .tfa-digit:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,77,158,0.15);}
+    .tfa-digit.filled{border-color:rgba(0,255,100,0.5);color:#00ff64;}
+  </style>
+</head>
+<body>
+
+<div class="box" id="mainBox">
+  <div class="tabs" id="tabsBar">
+    <button class="tab active" id="tabLogin">Connexion</button>
+    <button class="tab" id="tabRegister">S'inscrire</button>
+  </div>
+  <div class="content" id="authContent">
+    <div class="section active" id="loginSection">
+      <div class="title" id="titleSignIn">Sign In <span class="heart">♥</span></div>
+      <div class="field"><input type="email" id="loginEmail" placeholder="Adresse mail"/></div>
+      <div class="field"><div class="pass-wrap"><input type="password" id="loginPass" placeholder="Mot de passe"/><button class="pass-toggle" onclick="togglePass('loginPass',this)">👁️</button></div></div>
+      <button class="btn" id="btnConnect" onclick="login()">Se connecter</button>
+      <div class="links"><a onclick="showForgot()" id="linkForgot">Forgot Password</a></div>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+    <div class="section" id="registerSection">
+      <div class="title" id="titleSignUp">Sign Up <span class="heart">♥</span></div>
+      <div class="field"><input type="email" id="regEmail" placeholder="Adresse mail"/></div>
+      <div class="field"><input type="text" id="regPseudo" placeholder="Pseudo"/></div>
+      <div class="field"><div class="pass-wrap"><input type="password" id="regPass" placeholder="Mot de passe"/><button class="pass-toggle" onclick="togglePass('regPass',this)">👁️</button></div></div>
+      <div class="field"><div class="pass-wrap"><input type="password" id="regPassConfirm" placeholder="Confirmer mot de passe"/><button class="pass-toggle" onclick="togglePass('regPassConfirm',this)">👁️</button></div></div>
+      <button class="btn" id="btnCreate" onclick="register()">Créer mon compte</button>
+      <div class="msg" id="registerMsg"></div>
+    </div>
+    <div class="section" id="forgotSection">
+      <div class="title">Reset <span class="heart">♥</span></div>
+      <p class="forgot-desc" id="forgotDesc">Entre ton adresse mail, on t'envoie un lien de réinitialisation.</p>
+      <div class="field"><input type="email" id="forgotEmail" placeholder="Adresse mail"/></div>
+      <button class="btn" id="btnSend" onclick="forgotPassword()">Envoyer</button>
+      <div class="links"><a onclick="switchTab('login')" id="linkBack">← Retour</a></div>
+      <div class="msg" id="forgotMsg"></div>
+    </div>
+  </div>
+
+  <div class="dashboard" id="dashboard">
+    <div class="dash-header">
+      <div class="dash-avatar-wrap" onclick="openAvatarModal()">
+        <div class="dash-avatar" id="dashAvatar"><span id="dashAvatarContent">👾</span></div>
+        <div class="avatar-edit">✏️</div>
+      </div>
+      <div class="dash-pseudo" id="dashPseudo">Joueur</div>
+      <div class="dash-email-text" id="dashEmailText"></div>
+    </div>
+    <div class="dash-tabs">
+      <button class="dash-tab active" id="dtJeux" onclick="switchDash('jeux')">🎮 Jeux</button>
+      <button class="dash-tab" id="dtParam" onclick="switchDash('parametres')">⚙️ Paramètres</button>
+    </div>
+    <div class="dash-content">
+
+      <div class="dash-section active" id="jeuxSection">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Rechercher un jeu..." oninput="filterGames()"/>
+        </div>
+        <div class="game-grid" id="gameGrid"></div>
+        <div class="no-result" id="noResult" style="display:none;">Aucun jeu trouvé 😕</div>
+      </div>
+
+      <div class="dash-section" id="parametresSection">
+
+        <!-- INFOS COMPTE -->
+        <div class="setting-block">
+          <div class="setting-title">📋 Infos du compte</div>
+          <div class="info-row"><span class="info-key">Pseudo</span><span class="info-val" id="infoPseudo">—</span></div>
+          <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="infoEmail">—</span></div>
+          <div class="info-row"><span class="info-key">Membre depuis</span><span class="info-val" id="infoDate">—</span></div>
+          <div class="info-row"><span class="info-key">2FA</span><span class="info-val"><span id="info2fa" class="badge off">OFF</span></span></div>
+          <div class="info-row"><span class="info-key">Sauvegardes</span><span class="info-val" id="infoSaves">0 jeu(x)</span></div>
+        </div>
+
+        <!-- PSEUDO -->
+        <div class="setting-block">
+          <div class="setting-title">👤 Pseudo</div>
+          <div class="field"><input type="text" id="setPseudo" placeholder="Nouveau pseudo"/></div>
+          <button class="btn-sm" onclick="savePseudo()">Mettre à jour</button>
+          <div class="msg" id="pseudoMsg"></div>
+        </div>
+
+        <!-- EMAIL -->
+        <div class="setting-block">
+          <div class="setting-title">📧 Email</div>
+          <div class="field"><input type="email" id="setEmail" placeholder="Nouvel email"/></div>
+          <div class="field"><div class="pass-wrap"><input type="password" id="setEmailPass" placeholder="Confirmer avec ton mot de passe"/><button class="pass-toggle" onclick="togglePass('setEmailPass',this)">👁️</button></div></div>
+          <button class="btn-sm" onclick="saveEmail()">Mettre à jour</button>
+          <div class="msg" id="emailMsg"></div>
+        </div>
+
+        <!-- MOT DE PASSE -->
+        <div class="setting-block">
+          <div class="setting-title">🔒 Mot de passe</div>
+          <div class="field"><div class="pass-wrap"><input type="password" id="newPass" placeholder="Nouveau mot de passe"/><button class="pass-toggle" onclick="togglePass('newPass',this)">👁️</button></div></div>
+          <div class="field"><div class="pass-wrap"><input type="password" id="newPassConf" placeholder="Confirmer"/><button class="pass-toggle" onclick="togglePass('newPassConf',this)">👁️</button></div></div>
+          <button class="btn-sm" onclick="changePassword()">Mettre à jour</button>
+          <div class="msg" id="passMsg"></div>
+        </div>
+
+        <!-- 2FA -->
+        <div class="setting-block">
+          <div class="setting-title">🔐 Double authentification <span id="tfaBadge" class="badge off">OFF</span></div>
+          <p style="color:var(--muted);font-size:0.75rem;margin-bottom:12px;line-height:1.5;" id="tfaDesc">Active la 2FA pour sécuriser ton compte avec un code à 6 chiffres à chaque connexion.</p>
+
+          <!-- Étape 1 : bouton activer -->
+          <div id="tfa-step1">
+            <button class="btn-sm" id="btn2fa" onclick="start2FA()">Activer la 2FA</button>
+          </div>
+
+          <!-- Étape 2 : saisie du code -->
+          <div id="tfa-step2" style="display:none;animation:fadeIn 0.3s ease;">
+            <p style="color:var(--text);font-size:0.78rem;margin-bottom:4px;font-weight:600;">📲 Code envoyé à ton email</p>
+            <p style="color:var(--muted);font-size:0.72rem;margin-bottom:2px;">Code de vérification : <b style="color:var(--accent)" id="tfaRealCode"></b></p>
+            <div class="tfa-inputs">
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,0)" onkeydown="tfaBack(event,0)" type="text" inputmode="numeric"/>
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,1)" onkeydown="tfaBack(event,1)" type="text" inputmode="numeric"/>
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,2)" onkeydown="tfaBack(event,2)" type="text" inputmode="numeric"/>
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,3)" onkeydown="tfaBack(event,3)" type="text" inputmode="numeric"/>
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,4)" onkeydown="tfaBack(event,4)" type="text" inputmode="numeric"/>
+              <input class="tfa-digit" maxlength="1" oninput="tfaNext(this,5)" onkeydown="tfaBack(event,5)" type="text" inputmode="numeric"/>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn-save-sm" onclick="verify2FA()" style="flex:1">✅ Vérifier</button>
+              <button class="btn-cancel-sm" onclick="cancel2FA()" style="flex:1">Annuler</button>
+            </div>
+          </div>
+
+          <!-- Étape 3 : 2FA active -->
+          <div id="tfa-step3" style="display:none;animation:fadeIn 0.3s ease;">
+            <div style="background:rgba(0,255,100,0.07);border:1px solid rgba(0,255,100,0.2);border-radius:10px;padding:12px;margin-bottom:10px;text-align:center;">
+              <div style="font-size:1.5rem;margin-bottom:4px;">🛡️</div>
+              <p style="color:#00ff64;font-size:0.78rem;font-weight:600;">Ton compte est protégé !</p>
+              <p style="color:var(--muted);font-size:0.7rem;margin-top:3px;">2FA activée avec succès</p>
+            </div>
+            <button class="btn-danger" onclick="disable2FA()">Désactiver la 2FA</button>
+          </div>
+
+          <div class="msg" id="tfaMsg"></div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div class="setting-block">
+          <div class="setting-title">🔔 Notifications</div>
+          <div class="toggle-row"><span class="toggle-label" id="notifConnLabel">Alertes de connexion</span><label class="toggle"><input type="checkbox" id="notifConn" onchange="saveNotif()"/><span class="slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-label" id="notifMajLabel">Mises à jour</span><label class="toggle"><input type="checkbox" id="notifMaj" onchange="saveNotif()"/><span class="slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-label" id="notifPromoLabel">Promotions</span><label class="toggle"><input type="checkbox" id="notifPromo" onchange="saveNotif()"/><span class="slider"></span></label></div>
+          <div class="msg" id="notifMsg"></div>
+        </div>
+
+        <!-- THEME -->
+        <div class="setting-block">
+          <div class="setting-title">🌙 Thème</div>
+          <div class="toggle-row">
+            <span class="toggle-label" id="themeLabel">Mode sombre</span>
+            <label class="toggle"><input type="checkbox" id="themeToggle" onchange="toggleTheme()"/><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <!-- LANGUE -->
+        <div class="setting-block">
+          <div class="setting-title">🌍 Langue</div>
+          <div class="lang-selector">
+            <div class="lang-selected" id="langSelected" onclick="toggleLangMenu()">
+              <span id="langFlag">🇫🇷</span>
+              <span id="langName">Français</span>
+              <span class="lang-arrow" id="langArrow">▾</span>
+            </div>
+            <div class="lang-menu" id="langMenu">
+              <div class="lang-option" onclick="pickLang('fr','🇫🇷','Français')"><span>🇫🇷</span> Français</div>
+              <div class="lang-option" onclick="pickLang('en','🇬🇧','English')"><span>🇬🇧</span> English</div>
+              <div class="lang-option" onclick="pickLang('es','🇪🇸','Español')"><span>🇪🇸</span> Español</div>
+              <div class="lang-option" onclick="pickLang('de','🇩🇪','Deutsch')"><span>🇩🇪</span> Deutsch</div>
+              <div class="lang-option" onclick="pickLang('it','🇮🇹','Italiano')"><span>🇮🇹</span> Italiano</div>
+              <div class="lang-option" onclick="pickLang('pt','🇵🇹','Português')"><span>🇵🇹</span> Português</div>
+              <div class="lang-option" onclick="pickLang('jp','🇯🇵','日本語')"><span>🇯🇵</span> 日本語</div>
+              <div class="lang-option" onclick="pickLang('ar','🇸🇦','العربية')"><span>🇸🇦</span> العربية</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DECONNEXION -->
+        <div class="setting-block">
+          <div class="setting-title">🚪 Déconnexion</div>
+          <button class="btn-logout-dash" id="btnLogout" onclick="logout()">Se déconnecter</button>
+        </div>
+
+        <!-- SUPPRIMER -->
+        <div class="setting-block">
+          <div class="setting-title">🗑️ Supprimer le compte</div>
+          <button class="btn-danger" onclick="showDeleteConfirm()">Supprimer mon compte</button>
+          <div class="msg" id="deleteMsg"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL JEUX -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon" id="modalIcon"></div>
+      <div><div class="modal-title" id="modalTitle"></div><div class="modal-sub">Mes sauvegardes</div></div>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- MODAL AVATAR -->
+<div class="modal-overlay" id="avatarOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-icon">🖼️</div>
+      <div><div class="modal-title">Choisis ton avatar</div><div class="modal-sub">Style Netflix</div></div>
+    </div>
+    <div class="avatar-grid" id="avatarGrid"></div>
+    <button class="btn-close-modal" onclick="document.getElementById('avatarOverlay').classList.remove('open')">Fermer</button>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>⚠️ Supprimer le compte ?</h3>
+    <p>Cette action est irréversible. Ton compte sera définitivement supprimé.</p>
+    <div class="field"><div class="pass-wrap"><input type="password" id="deletePass" placeholder="Confirme ton mot de passe"/><button class="pass-toggle" onclick="togglePass('deletePass',this)">👁️</button></div></div>
+    <div class="confirm-btns">
+      <button class="btn-danger" onclick="deleteAccount()" style="flex:1">Supprimer</button>
+      <button class="btn-cancel-sm" onclick="document.getElementById('confirmOverlay').classList.remove('open')" style="flex:1">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // PROTECTION CODE
+  const SECRET='xK9mP2qL7nT4';
+  if(new URLSearchParams(window.location.search).get('code')!==SECRET){
+    document.body.innerHTML=`<div style="min-height:100vh;background:#0d0d1a;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;flex-direction:column;gap:16px;"><div style="font-size:3rem;">🔒</div><h1 style="color:#ff4d9e;font-size:1.2rem;letter-spacing:3px;text-transform:uppercase;">Accès Interdit</h1><p style="color:#555a7a;font-size:0.85rem;">Vous n'êtes pas autorisé à accéder à cette page.</p></div>`;
+  }
+
+  // AVATARS style Netflix
+  const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','🦄','🤖','👻','💀','🧙','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
+  let selectedAvatar = '👾';
+
+  function openAvatarModal() {
+    const grid = document.getElementById('avatarGrid');
+    grid.innerHTML = AVATARS.map(a=>`
+      <div class="av-item ${a===selectedAvatar?'selected':''}" onclick="pickAvatar('${a}')">${a}</div>
+    `).join('');
+    document.getElementById('avatarOverlay').classList.add('open');
+  }
+
+  function pickAvatar(emoji) {
+    if(window.pickAvatarAndSave) window.pickAvatarAndSave(emoji);
+    else { selectedAvatar=emoji; document.getElementById('dashAvatarContent').textContent=emoji; document.getElementById('avatarOverlay').classList.remove('open'); }
+  }
+
+  // THEME
+  function toggleTheme() {
+    const isLight = document.getElementById('themeToggle').checked;
+    document.body.classList.toggle('light', isLight);
+    document.getElementById('themeLabel').textContent = isLight ? T('modeLight') : T('modeDark');
+  }
+
+  // LANGUES
+  const LANG_DATA = {
+    fr:{login:'Connexion',register:"S'inscrire",signIn:'Sign In',signUp:'Sign Up',games:'🎮 Jeux',settings:'⚙️ Paramètres',search:'Rechercher un jeu...',connect:'Se connecter',create:'Créer mon compte',send:'Envoyer',back:'← Retour',logout:'Se déconnecter',modeDark:'Mode sombre',modeLight:'Mode clair',forgot:'Mot de passe oublié ?',notifConn:'Alertes de connexion',notifMaj:'Mises à jour',notifPromo:'Promotions'},
+    en:{login:'Login',register:'Sign Up',signIn:'Sign In',signUp:'Sign Up',games:'🎮 Games',settings:'⚙️ Settings',search:'Search a game...',connect:'Sign In',create:'Create account',send:'Send',back:'← Back',logout:'Log out',modeDark:'Dark mode',modeLight:'Light mode',forgot:'Forgot password?',notifConn:'Login alerts',notifMaj:'Updates',notifPromo:'Promotions'},
+    es:{login:'Iniciar sesión',register:'Registrarse',signIn:'Iniciar sesión',signUp:'Registrarse',games:'🎮 Juegos',settings:'⚙️ Ajustes',search:'Buscar un juego...',connect:'Conectar',create:'Crear cuenta',send:'Enviar',back:'← Volver',logout:'Cerrar sesión',modeDark:'Modo oscuro',modeLight:'Modo claro',forgot:'¿Olvidaste tu contraseña?',notifConn:'Alertas de acceso',notifMaj:'Actualizaciones',notifPromo:'Promociones'},
+    de:{login:'Anmelden',register:'Registrieren',signIn:'Anmelden',signUp:'Registrieren',games:'🎮 Spiele',settings:'⚙️ Einstellungen',search:'Spiel suchen...',connect:'Einloggen',create:'Konto erstellen',send:'Senden',back:'← Zurück',logout:'Abmelden',modeDark:'Dunkelmodus',modeLight:'Hellmodus',forgot:'Passwort vergessen?',notifConn:'Anmelde-Benachrichtigungen',notifMaj:'Updates',notifPromo:'Angebote'},
+    it:{login:'Accedi',register:'Registrati',signIn:'Accedi',signUp:'Registrati',games:'🎮 Giochi',settings:'⚙️ Impostazioni',search:'Cerca un gioco...',connect:'Accedi',create:'Crea account',send:'Invia',back:'← Indietro',logout:'Esci',modeDark:'Modalità scura',modeLight:'Modalità chiara',forgot:'Password dimenticata?',notifConn:'Avvisi di accesso',notifMaj:'Aggiornamenti',notifPromo:'Promozioni'},
+    pt:{login:'Entrar',register:'Registrar',signIn:'Entrar',signUp:'Registrar',games:'🎮 Jogos',settings:'⚙️ Configurações',search:'Procurar um jogo...',connect:'Entrar',create:'Criar conta',send:'Enviar',back:'← Voltar',logout:'Sair',modeDark:'Modo escuro',modeLight:'Modo claro',forgot:'Esqueceu a senha?',notifConn:'Alertas de login',notifMaj:'Atualizações',notifPromo:'Promoções'},
+    jp:{login:'ログイン',register:'登録',signIn:'ログイン',signUp:'新規登録',games:'🎮 ゲーム',settings:'⚙️ 設定',search:'ゲームを検索...',connect:'ログイン',create:'アカウント作成',send:'送信',back:'← 戻る',logout:'ログアウト',modeDark:'ダークモード',modeLight:'ライトモード',forgot:'パスワードを忘れた？',notifConn:'ログイン通知',notifMaj:'アップデート',notifPromo:'プロモーション'},
+    ar:{login:'تسجيل الدخول',register:'إنشاء حساب',signIn:'تسجيل الدخول',signUp:'إنشاء حساب',games:'🎮 الألعاب',settings:'⚙️ الإعدادات',search:'ابحث عن لعبة...',connect:'دخول',create:'إنشاء حساب',send:'إرسال',back:'→ رجوع',logout:'تسجيل الخروج',modeDark:'الوضع الداكن',modeLight:'الوضع الفاتح',forgot:'نسيت كلمة المرور؟',notifConn:'تنبيهات تسجيل الدخول',notifMaj:'التحديثات',notifPromo:'العروض'},
+  };
+  let curLang = 'fr';
+  function T(key){ return (LANG_DATA[curLang]||LANG_DATA.fr)[key]||key; }
+
+  // LANG CUSTOM DROPDOWN
+  function toggleLangMenu() {
+    const menu = document.getElementById('langMenu');
+    const arrow = document.getElementById('langArrow');
+    menu.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+  function pickLang(code, flag, name) {
+    document.getElementById('langFlag').textContent = flag;
+    document.getElementById('langName').textContent = name;
+    document.getElementById('langMenu').classList.remove('open');
+    document.getElementById('langArrow').classList.remove('open');
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active-lang'));
+    event.currentTarget.classList.add('active-lang');
+    curLang = code;
+    changeLang();
+  }
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.lang-selector')) {
+      document.getElementById('langMenu').classList.remove('open');
+      document.getElementById('langArrow').classList.remove('open');
+    }
+  });
+
+  function changeLang() {
+    const l = LANG_DATA[curLang]||LANG_DATA.fr;
+    const isRTL = curLang==='ar';
+    document.body.dir = isRTL?'rtl':'ltr';
+    document.getElementById('tabLogin').textContent = l.login;
+    document.getElementById('tabRegister').textContent = l.register;
+    document.getElementById('titleSignIn').innerHTML = l.signIn+' <span class="heart">♥</span>';
+    document.getElementById('titleSignUp').innerHTML = l.signUp+' <span class="heart">♥</span>';
+    document.getElementById('dtJeux').textContent = l.games;
+    document.getElementById('dtParam').textContent = l.settings;
+    document.getElementById('searchInput').placeholder = l.search;
+    document.getElementById('btnConnect').textContent = l.connect;
+    document.getElementById('btnCreate').textContent = l.create;
+    document.getElementById('btnSend').textContent = l.send;
+    document.getElementById('linkBack').textContent = l.back;
+    document.getElementById('btnLogout').textContent = l.logout;
+    document.getElementById('linkForgot').textContent = l.forgot||'Forgot Password';
+    document.getElementById('themeLabel').textContent = document.getElementById('themeToggle').checked ? l.modeLight : l.modeDark;
+    document.getElementById('notifConnLabel').textContent = l.notifConn;
+    document.getElementById('notifMajLabel').textContent = l.notifMaj;
+    document.getElementById('notifPromoLabel').textContent = l.notifPromo;
+  }
+
+  // PSEUDO — géré par Firebase (voir script module)
+
+  // NOTIFICATIONS
+  function saveNotif(){
+    showMsg('notifMsg','✅ Préférences sauvegardées !','success');
+    setTimeout(()=>{const m=document.getElementById('notifMsg');if(m)m.style.display='none';},2000);
+  }
+
+  // 2FA RÉALISTE
+  let tfaEnabled=false, tfaCode='';
+  function start2FA(){
+    tfaCode = String(Math.floor(100000+Math.random()*900000));
+    document.getElementById('tfaRealCode').textContent = tfaCode;
+    document.getElementById('tfa-step1').style.display='none';
+    document.getElementById('tfa-step2').style.display='block';
+    document.querySelectorAll('.tfa-digit').forEach(d=>{d.value='';d.classList.remove('filled');});
+    setTimeout(()=>document.querySelectorAll('.tfa-digit')[0].focus(), 100);
+  }
+  function tfaNext(input, idx){
+    input.value = input.value.replace(/[^0-9]/g,'').slice(-1);
+    if(input.value){ input.classList.add('filled'); const digits=document.querySelectorAll('.tfa-digit'); if(idx<5) digits[idx+1].focus(); }
+    else input.classList.remove('filled');
+  }
+  function tfaBack(e, idx){
+    if(e.key==='Backspace'){const digits=document.querySelectorAll('.tfa-digit');digits[idx].value='';digits[idx].classList.remove('filled');if(idx>0)digits[idx-1].focus();}
+  }
+  function verify2FA(){
+    const entered = [...document.querySelectorAll('.tfa-digit')].map(d=>d.value).join('');
+    if(entered.length<6){showMsg('tfaMsg','⚠️ Entre les 6 chiffres !','error');return;}
+    if(entered===tfaCode){
+      tfaEnabled=true;
+      document.getElementById('tfa-step2').style.display='none';
+      document.getElementById('tfa-step3').style.display='block';
+      document.getElementById('tfaBadge').textContent='ON'; document.getElementById('tfaBadge').className='badge on';
+      document.getElementById('info2fa').textContent='ON'; document.getElementById('info2fa').className='badge on';
+      showMsg('tfaMsg','✅ 2FA activée avec succès !','success');
+    } else {
+      document.querySelectorAll('.tfa-digit').forEach(d=>{d.value='';d.classList.remove('filled');d.style.borderColor='rgba(255,60,60,0.6)';});
+      setTimeout(()=>document.querySelectorAll('.tfa-digit').forEach(d=>d.style.borderColor=''),600);
+      showMsg('tfaMsg','❌ Code incorrect, réessaie !','error');
+    }
+  }
+  function cancel2FA(){
+    document.getElementById('tfa-step2').style.display='none';
+    document.getElementById('tfa-step1').style.display='block';
+  }
+  function disable2FA(){
+    tfaEnabled=false; tfaCode='';
+    document.getElementById('tfa-step3').style.display='none';
+    document.getElementById('tfa-step1').style.display='block';
+    document.getElementById('tfaBadge').textContent='OFF'; document.getElementById('tfaBadge').className='badge off';
+    document.getElementById('info2fa').textContent='OFF'; document.getElementById('info2fa').className='badge off';
+    showMsg('tfaMsg','⚠️ 2FA désactivée.','info');
+  }
+
+  // TOGGLE PASS
+  function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.style.opacity=i.type==='text'?'1':'0.5';}
+  function toggleSavePass(sid,btn){const s=document.getElementById(sid);const h=s.dataset.hidden==='true';s.textContent=h?s.dataset.pass:'•'.repeat(s.dataset.pass.length);s.dataset.hidden=h?'false':'true';btn.style.opacity=h?'1':'0.5';}
+
+  // JEUX
+  const GAMES=[
+    {icon:'⚔️',name:'Fortnite',status:'Battle Royale'},
+    {icon:'🧱',name:'Minecraft',status:'Survie / Créatif'},
+    {icon:'🎯',name:'Valorant',status:'FPS Tactique'},
+    {icon:'🏎️',name:'Rocket League',status:'Sport'},
+    {icon:'🔫',name:'Call of Duty',status:'FPS'},
+    {icon:'🧟',name:'Warzone',status:'Battle Royale'},
+    {icon:'🐉',name:'League of Legends',status:'MOBA'},
+    {icon:'🌍',name:'GTA V',status:'Open World'},
+    {icon:'🕹️',name:'Roblox',status:'Multijoueur'},
+    {icon:'🏹',name:'Apex Legends',status:'Battle Royale'},
+    {icon:'⚽',name:'FIFA 24',status:'Sport'},
+    {icon:'🧠',name:'Among Us',status:'Social'},
+    {icon:'🚀',name:'Starfield',status:'RPG Espace'},
+    {icon:'🗡️',name:'Elden Ring',status:'Action RPG'},
+    {icon:'🎲',name:'Overwatch 2',status:'Hero Shooter'},
+    {icon:'🌲',name:'Rust',status:'Survie'},
+    {icon:'🎸',name:'Cyberpunk 2077',status:'Open World RPG'},
+    {icon:'🐺',name:'The Witcher 3',status:'RPG'},
+    {icon:'🏔️',name:'Hogwarts Legacy',status:'Action RPG'},
+    {icon:'🎮',name:'Fall Guys',status:'Party Game'},
+  ];
+  let gameSaves={},currentGame=null,editingId=null;
+  function getKey(n){return n.replace(/\s/g,'_');}
+  function getSaves(n){return gameSaves[getKey(n)]||[];}
+  function countAllSaves(){return Object.values(gameSaves).reduce((a,b)=>a+b.length,0);}
+
+  function renderGames(list){
+    const grid=document.getElementById('gameGrid'),noResult=document.getElementById('noResult');
+    if(!list.length){grid.innerHTML='';noResult.style.display='block';return;}
+    noResult.style.display='none';
+    grid.innerHTML=list.map(g=>{const s=getSaves(g.name);return`<div class="game-card ${s.length?'has-saves':''}" onclick="openModal('${g.name}','${g.icon}')">
+      ${s.length?`<span class="save-count">${s.length}</span>`:''}
+      <div class="icon">${g.icon}</div><div class="name">${g.name}</div><div class="status">${g.status}</div>
+    </div>`;}).join('');
+  }
+  function filterGames(){const q=document.getElementById('searchInput').value.toLowerCase();renderGames(GAMES.filter(g=>g.name.toLowerCase().includes(q)));}
+
+  function openModal(name,icon){
+    currentGame=name;editingId=null;
+    document.getElementById('modalIcon').textContent=icon;
+    document.getElementById('modalTitle').textContent=name;
+    renderModalBody();
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function renderModalBody(){
+    const saves=getSaves(currentGame);
+    let html=saves.length?'':'<div class="empty-saves">Aucune sauvegarde.<br>Crée-en une ! 👇</div>';
+    saves.forEach(s=>{const sid='pass_'+s.id;html+=`<div class="save-item">
+      <div class="save-item-header"><span class="save-lbl">👤 ${s.pseudo}</span>
+        <div class="save-actions"><button class="btn-icon" onclick="startEdit('${s.id}')">✏️</button><button class="btn-icon" onclick="deleteSave('${s.id}')">🗑️</button></div>
+      </div>
+      <div class="save-row"><span class="save-key">Identifiant</span><span class="save-val">${s.user}</span></div>
+      <div class="save-row"><span class="save-key">Mot de passe</span><span class="save-val">
+        <span id="${sid}" data-pass="${s.pass}" data-hidden="true">${'•'.repeat(s.pass.length)}</span>
+        <button class="eye-btn" onclick="toggleSavePass('${sid}',this)">👁️</button>
+      </span></div>
+    </div>`;});
+    html+=`<div class="add-form" id="addForm">
+      <div class="add-form-title" id="addFormTitle">➕ Nouvelle sauvegarde</div>
+      <div class="field"><input type="text" id="savePseudo" placeholder="Pseudo"/></div>
+      <div class="field"><input type="text" id="saveUser" placeholder="Identifiant"/></div>
+      <div class="field"><div class="pass-wrap"><input type="password" id="savePass" placeholder="Mot de passe"/><button class="pass-toggle" onclick="togglePass('savePass',this)">👁️</button></div></div>
+      <div class="form-btns"><button class="btn-save-sm" onclick="confirmSave()">💾 Sauvegarder</button><button class="btn-cancel-sm" onclick="cancelAdd()">Annuler</button></div>
+    </div>
+    <button class="btn-add" id="btnAdd" onclick="showAddForm()">➕ Créer une sauvegarde</button>
+    <button class="btn-close-modal" onclick="closeModal()">Fermer</button>`;
+    document.getElementById('modalBody').innerHTML=html;
+  }
+  function showAddForm(){editingId=null;['savePseudo','saveUser','savePass'].forEach(id=>document.getElementById(id).value='');document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  function cancelAdd(){editingId=null;document.getElementById('addForm').classList.remove('open');document.getElementById('btnAdd').style.display='block';}
+  function startEdit(id){const s=getSaves(currentGame).find(x=>x.id===id);if(!s)return;editingId=id;document.getElementById('savePseudo').value=s.pseudo;document.getElementById('saveUser').value=s.user;document.getElementById('savePass').value=s.pass;document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  function confirmSave(){
+    const pseudo=document.getElementById('savePseudo').value.trim();
+    const user=document.getElementById('saveUser').value.trim();
+    const pass=document.getElementById('savePass').value;
+    if(!user||!pass){alert('⚠️ Identifiant et mot de passe requis !');return;}
+    const key=getKey(currentGame);
+    if(!gameSaves[key])gameSaves[key]=[];
+    if(editingId){const idx=gameSaves[key].findIndex(s=>s.id===editingId);if(idx!==-1)gameSaves[key][idx]={id:editingId,pseudo:pseudo||user,user,pass};}
+    else gameSaves[key].push({id:Date.now().toString(),pseudo:pseudo||user,user,pass});
+    editingId=null;renderModalBody();filterGames();
+    document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';
+  }
+  function deleteSave(id){const key=getKey(currentGame);gameSaves[key]=(gameSaves[key]||[]).filter(s=>s.id!==id);renderModalBody();filterGames();document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';}
+  function closeModal(){document.getElementById('modalOverlay').classList.remove('open');currentGame=null;editingId=null;}
+  document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.getElementById('avatarOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+
+  function showDeleteConfirm(){document.getElementById('deletePass').value='';document.getElementById('confirmOverlay').classList.add('open');}
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+  function hideAllMsgs(){document.querySelectorAll('.msg').forEach(m=>m.style.display='none');}
+
+  window.addEventListener('load',()=>renderGames(GAMES));
+</script>
+
+<script type="module">
+  import{initializeApp}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser,signOut}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+  const app=initializeApp({apiKey:"AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",authDomain:"monlogin-41e0e.firebaseapp.com",projectId:"monlogin-41e0e",storageBucket:"monlogin-41e0e.firebasestorage.app",messagingSenderId:"699665895535",appId:"1:699665895535:web:46931d57611ad69e1a3d9a"});
+  const auth=getAuth(app);
+
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+
+  // Charge pseudo + avatar depuis localStorage
+  function loadUserProfile(email) {
+    const key = 'profile_' + email;
+    const saved = localStorage.getItem(key);
+    if(saved) {
+      const data = JSON.parse(saved);
+      if(data.pseudo){
+        document.getElementById('dashPseudo').textContent=data.pseudo;
+        document.getElementById('infoPseudo').textContent=data.pseudo;
+      }
+      if(data.avatar){
+        selectedAvatar=data.avatar;
+        document.getElementById('dashAvatarContent').textContent=data.avatar;
+      }
+    }
+  }
+
+  // Sauvegarde pseudo + avatar dans localStorage
+  function saveProfile(field, value) {
+    const email = auth.currentUser?.email;
+    if(!email) return;
+    const key = 'profile_' + email;
+    const existing = JSON.parse(localStorage.getItem(key)||'{}');
+    existing[field] = value;
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
+
+  window.switchTab=function(tab){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='login'?'loginSection':'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='flex';
+  }
+  window.showForgot=function(){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='none';
+  }
+  window.switchDash=function(tab){
+    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+  }
+
+  window.register=async function(){
+    const email=document.getElementById('regEmail').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
+    const pass=document.getElementById('regPass').value;
+    const conf=document.getElementById('regPassConfirm').value;
+    if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
+    if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
+    if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
+    try{
+      await createUserWithEmailAndPassword(auth,email,pass);
+      // Sauvegarder pseudo dans localStorage
+      localStorage.setItem('profile_'+email, JSON.stringify({pseudo, avatar:'👾'}));
+      showMsg('registerMsg','✅ Compte créé !','success');
+      ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
+      setTimeout(()=>window.switchTab('login'),1500);
+    }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
+  }
+
+  window.login=async function(){
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    if(!email||!pass){showMsg('loginMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const result=await signInWithEmailAndPassword(auth,email,pass);
+      document.getElementById('tabsBar').style.display='none';
+      document.getElementById('authContent').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dashEmailText').textContent=result.user.email;
+      document.getElementById('infoEmail').textContent=result.user.email;
+      document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      // Charger pseudo + avatar
+      loadUserProfile(result.user.email);
+    }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
+  }
+
+  window.savePseudo=async function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    saveProfile('pseudo', val);
+    document.getElementById('dashPseudo').textContent=val;
+    document.getElementById('infoPseudo').textContent=val;
+    document.getElementById('setPseudo').value='';
+    showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
+  }
+
+  // Avatar sauvegardé via localStorage
+  window.pickAvatarAndSave=function(emoji){
+    selectedAvatar=emoji;
+    document.getElementById('dashAvatarContent').textContent=emoji;
+    document.getElementById('avatarOverlay').classList.remove('open');
+    saveProfile('avatar', emoji);
+  }
+
+  window.forgotPassword=async function(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
+    try{await sendPasswordResetEmail(auth,email);showMsg('forgotMsg','📧 Email envoyé !','info');document.getElementById('forgotEmail').value='';setTimeout(()=>window.switchTab('login'),2500);}
+    catch(e){showMsg('forgotMsg','❌ '+e.message,'error');}
+  }
+  window.changePassword=async function(){
+    const np=document.getElementById('newPass').value,conf=document.getElementById('newPassConf').value;
+    if(!np||!conf){showMsg('passMsg','⚠️ Remplis les deux champs !','error');return;}
+    if(np.length<6){showMsg('passMsg','⚠️ Min 6 caractères.','error');return;}
+    if(np!==conf){showMsg('passMsg','❌ Mots de passe différents.','error');return;}
+    try{await updatePassword(auth.currentUser,np);showMsg('passMsg','✅ Mot de passe mis à jour !','success');['newPass','newPassConf'].forEach(id=>document.getElementById(id).value='');}
+    catch(e){showMsg('passMsg','❌ '+e.message,'error');}
+  }
+  window.saveEmail=async function(){
+    const newEmail=document.getElementById('setEmail').value.trim();
+    const pass=document.getElementById('setEmailPass').value;
+    if(!newEmail||!pass){showMsg('emailMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('dashEmailText').textContent=newEmail;
+      document.getElementById('infoEmail').textContent=newEmail;
+      showMsg('emailMsg','✅ Email mis à jour !','success');
+      ['setEmail','setEmailPass'].forEach(id=>document.getElementById(id).value='');
+    }catch(e){showMsg('emailMsg','❌ '+e.message,'error');}
+  }
+  window.deleteAccount=async function(){
+    const pass=document.getElementById('deletePass').value;
+    if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
+    try{
+      const email=auth.currentUser.email;
+      const cred=EmailAuthProvider.credential(email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await deleteUser(auth.currentUser);
+      localStorage.removeItem('profile_'+email);
+      document.getElementById('confirmOverlay').classList.remove('open');
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('tabsBar').style.display='flex';
+      document.getElementById('authContent').style.display='block';
+      window.switchTab('login');
+    }catch(e){alert('❌ '+e.message);}
+  }
+  window.logout=async function(){
+    await signOut(auth);
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('tabsBar').style.display='flex';
+    document.getElementById('authContent').style.display='block';
+    ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).value='');
+    window.switchTab('login');
+  }
+</script>
+
+  const app=initializeApp({apiKey:"AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",authDomain:"monlogin-41e0e.firebaseapp.com",projectId:"monlogin-41e0e",storageBucket:"monlogin-41e0e.firebasestorage.app",messagingSenderId:"699665895535",appId:"1:699665895535:web:46931d57611ad69e1a3d9a"});
+  const auth=getAuth(app);
+  const db=getFirestore(app);
+
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+
+  // Charge pseudo + avatar depuis Firestore
+  async function loadUserProfile(uid) {
+    try {
+      const snap = await getDoc(doc(db,'users',uid));
+      if(snap.exists()){
+        const data = snap.data();
+        if(data.pseudo){
+          document.getElementById('dashPseudo').textContent=data.pseudo;
+          document.getElementById('infoPseudo').textContent=data.pseudo;
+        }
+        if(data.avatar){
+          selectedAvatar=data.avatar;
+          document.getElementById('dashAvatarContent').textContent=data.avatar;
+        }
+      }
+    } catch(e){ console.log('Profil non trouvé'); }
+  }
+
+  window.switchTab=function(tab){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='login'?'loginSection':'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='flex';
+  }
+  window.showForgot=function(){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='none';
+  }
+  window.switchDash=function(tab){
+    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+  }
+
+  window.register=async function(){
+    const email=document.getElementById('regEmail').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
+    const pass=document.getElementById('regPass').value;
+    const conf=document.getElementById('regPassConfirm').value;
+    if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
+    if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
+    if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
+    try{
+      const result=await createUserWithEmailAndPassword(auth,email,pass);
+      // Sauvegarder pseudo + avatar dans Firestore
+      await setDoc(doc(db,'users',result.user.uid),{pseudo, avatar:'👾', createdAt: new Date().toISOString()});
+      showMsg('registerMsg','✅ Compte créé !','success');
+      ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
+      setTimeout(()=>window.switchTab('login'),1500);
+    }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
+  }
+
+  window.login=async function(){
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    if(!email||!pass){showMsg('loginMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const result=await signInWithEmailAndPassword(auth,email,pass);
+      document.getElementById('tabsBar').style.display='none';
+      document.getElementById('authContent').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dashEmailText').textContent=result.user.email;
+      document.getElementById('infoEmail').textContent=result.user.email;
+      document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      // Charger pseudo + avatar sauvegardés
+      await loadUserProfile(result.user.uid);
+    }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
+  }
+
+  // Sauvegarder pseudo dans Firestore
+  window.savePseudo=async function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    try{
+      await updateDoc(doc(db,'users',auth.currentUser.uid),{pseudo:val});
+      document.getElementById('dashPseudo').textContent=val;
+      document.getElementById('infoPseudo').textContent=val;
+      document.getElementById('setPseudo').value='';
+      showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
+    }catch(e){showMsg('pseudoMsg','❌ '+e.message,'error');}
+  }
+
+  // Sauvegarder avatar dans Firestore (override fonction globale)
+  window.pickAvatarAndSave=async function(emoji){
+    selectedAvatar=emoji;
+    document.getElementById('dashAvatarContent').textContent=emoji;
+    document.getElementById('avatarOverlay').classList.remove('open');
+    if(auth.currentUser){
+      try{ await updateDoc(doc(db,'users',auth.currentUser.uid),{avatar:emoji}); }
+      catch(e){ console.log('Avatar save error',e); }
+    }
+  }
+
+  window.forgotPassword=async function(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
+    try{await sendPasswordResetEmail(auth,email);showMsg('forgotMsg','📧 Email envoyé !','info');document.getElementById('forgotEmail').value='';setTimeout(()=>window.switchTab('login'),2500);}
+    catch(e){showMsg('forgotMsg','❌ '+e.message,'error');}
+  }
+  window.changePassword=async function(){
+    const np=document.getElementById('newPass').value,conf=document.getElementById('newPassConf').value;
+    if(!np||!conf){showMsg('passMsg','⚠️ Remplis les deux champs !','error');return;}
+    if(np.length<6){showMsg('passMsg','⚠️ Min 6 caractères.','error');return;}
+    if(np!==conf){showMsg('passMsg','❌ Mots de passe différents.','error');return;}
+    try{await updatePassword(auth.currentUser,np);showMsg('passMsg','✅ Mot de passe mis à jour !','success');['newPass','newPassConf'].forEach(id=>document.getElementById(id).value='');}
+    catch(e){showMsg('passMsg','❌ '+e.message,'error');}
+  }
+  window.saveEmail=async function(){
+    const newEmail=document.getElementById('setEmail').value.trim();
+    const pass=document.getElementById('setEmailPass').value;
+    if(!newEmail||!pass){showMsg('emailMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('dashEmailText').textContent=newEmail;
+      document.getElementById('infoEmail').textContent=newEmail;
+      showMsg('emailMsg','✅ Email mis à jour !','success');
+      ['setEmail','setEmailPass'].forEach(id=>document.getElementById(id).value='');
+    }catch(e){showMsg('emailMsg','❌ '+e.message,'error');}
+  }
+  window.deleteAccount=async function(){
+    const pass=document.getElementById('deletePass').value;
+    if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await deleteDoc(doc(db,'users',auth.currentUser.uid));
+      await deleteUser(auth.currentUser);
+      document.getElementById('confirmOverlay').classList.remove('open');
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('tabsBar').style.display='flex';
+      document.getElementById('authContent').style.display='block';
+      window.switchTab('login');
+    }catch(e){alert('❌ '+e.message);}
+  }
+  window.logout=async function(){
+    await signOut(auth);
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('tabsBar').style.display='flex';
+    document.getElementById('authContent').style.display='block';
+    ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).value='');
+    window.switchTab('login');
+  }
+</script>
+
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+
+  window.switchTab=function(tab){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='login'?'loginSection':'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='flex';
+  }
+  window.showForgot=function(){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='none';
+  }
+  window.switchDash=function(tab){
+    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+  }
+  window.register=async function(){
+    const email=document.getElementById('regEmail').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim();
+    const pass=document.getElementById('regPass').value;
+    const conf=document.getElementById('regPassConfirm').value;
+    if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
+    if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
+    if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
+    try{
+      await createUserWithEmailAndPassword(auth,email,pass);
+      if(pseudo){document.getElementById('dashPseudo').textContent=pseudo;document.getElementById('infoPseudo').textContent=pseudo;}
+      showMsg('registerMsg','✅ Compte créé !','success');
+      ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
+      setTimeout(()=>window.switchTab('login'),1500);
+    }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
+  }
+  window.login=async function(){
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    if(!email||!pass){showMsg('loginMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const result=await signInWithEmailAndPassword(auth,email,pass);
+      document.getElementById('tabsBar').style.display='none';
+      document.getElementById('authContent').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dashEmailText').textContent=result.user.email;
+      document.getElementById('infoEmail').textContent=result.user.email;
+      document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+    }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
+  }
+  window.forgotPassword=async function(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
+    try{await sendPasswordResetEmail(auth,email);showMsg('forgotMsg','📧 Email envoyé !','info');document.getElementById('forgotEmail').value='';setTimeout(()=>window.switchTab('login'),2500);}
+    catch(e){showMsg('forgotMsg','❌ '+e.message,'error');}
+  }
+  window.changePassword=async function(){
+    const np=document.getElementById('newPass').value,conf=document.getElementById('newPassConf').value;
+    if(!np||!conf){showMsg('passMsg','⚠️ Remplis les deux champs !','error');return;}
+    if(np.length<6){showMsg('passMsg','⚠️ Min 6 caractères.','error');return;}
+    if(np!==conf){showMsg('passMsg','❌ Mots de passe différents.','error');return;}
+    try{await updatePassword(auth.currentUser,np);showMsg('passMsg','✅ Mot de passe mis à jour !','success');['newPass','newPassConf'].forEach(id=>document.getElementById(id).value='');}
+    catch(e){showMsg('passMsg','❌ '+e.message,'error');}
+  }
+  window.saveEmail=async function(){
+    const newEmail=document.getElementById('setEmail').value.trim();
+    const pass=document.getElementById('setEmailPass').value;
+    if(!newEmail||!pass){showMsg('emailMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('dashEmailText').textContent=newEmail;
+      document.getElementById('infoEmail').textContent=newEmail;
+      showMsg('emailMsg','✅ Email mis à jour !','success');
+      ['setEmail','setEmailPass'].forEach(id=>document.getElementById(id).value='');
+    }catch(e){showMsg('emailMsg','❌ '+e.message,'error');}
+  }
+  window.deleteAccount=async function(){
+    const pass=document.getElementById('deletePass').value;
+    if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await deleteUser(auth.currentUser);
+      document.getElementById('confirmOverlay').classList.remove('open');
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('tabsBar').style.display='flex';
+      document.getElementById('authContent').style.display='block';
+      window.switchTab('login');
+    }catch(e){alert('❌ '+e.message);}
+  }
+  window.logout=async function(){
+    await signOut(auth);
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('tabsBar').style.display='flex';
+    document.getElementById('authContent').style.display='block';
+    ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).value='');
+    window.switchTab('login');
+  }
+</script>
+</body>
+</html>
