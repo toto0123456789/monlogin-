@@ -436,9 +436,8 @@
   }
 
   function pickAvatar(emoji) {
-    selectedAvatar = emoji;
-    document.getElementById('dashAvatarContent').textContent = emoji;
-    document.getElementById('avatarOverlay').classList.remove('open');
+    if(window.pickAvatarAndSave) window.pickAvatarAndSave(emoji);
+    else { selectedAvatar=emoji; document.getElementById('dashAvatarContent').textContent=emoji; document.getElementById('avatarOverlay').classList.remove('open'); }
   }
 
   // THEME
@@ -509,17 +508,7 @@
     document.getElementById('notifPromoLabel').textContent = l.notifPromo;
   }
 
-  // PSEUDO local
-  let userPseudo='Joueur';
-  function savePseudo(){
-    const val=document.getElementById('setPseudo').value.trim();
-    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
-    userPseudo=val;
-    document.getElementById('dashPseudo').textContent=val;
-    document.getElementById('infoPseudo').textContent=val;
-    document.getElementById('setPseudo').value='';
-    showMsg('pseudoMsg','✅ Pseudo mis à jour !','success');
-  }
+  // PSEUDO — géré par Firebase (voir script module)
 
   // NOTIFICATIONS
   function saveNotif(){
@@ -681,6 +670,312 @@
 
   const app=initializeApp({apiKey:"AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",authDomain:"monlogin-41e0e.firebaseapp.com",projectId:"monlogin-41e0e",storageBucket:"monlogin-41e0e.firebasestorage.app",messagingSenderId:"699665895535",appId:"1:699665895535:web:46931d57611ad69e1a3d9a"});
   const auth=getAuth(app);
+
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+
+  // Charge pseudo + avatar depuis localStorage
+  function loadUserProfile(email) {
+    const key = 'profile_' + email;
+    const saved = localStorage.getItem(key);
+    if(saved) {
+      const data = JSON.parse(saved);
+      if(data.pseudo){
+        document.getElementById('dashPseudo').textContent=data.pseudo;
+        document.getElementById('infoPseudo').textContent=data.pseudo;
+      }
+      if(data.avatar){
+        selectedAvatar=data.avatar;
+        document.getElementById('dashAvatarContent').textContent=data.avatar;
+      }
+    }
+  }
+
+  // Sauvegarde pseudo + avatar dans localStorage
+  function saveProfile(field, value) {
+    const email = auth.currentUser?.email;
+    if(!email) return;
+    const key = 'profile_' + email;
+    const existing = JSON.parse(localStorage.getItem(key)||'{}');
+    existing[field] = value;
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
+
+  window.switchTab=function(tab){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='login'?'loginSection':'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='flex';
+  }
+  window.showForgot=function(){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='none';
+  }
+  window.switchDash=function(tab){
+    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+  }
+
+  window.register=async function(){
+    const email=document.getElementById('regEmail').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
+    const pass=document.getElementById('regPass').value;
+    const conf=document.getElementById('regPassConfirm').value;
+    if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
+    if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
+    if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
+    try{
+      await createUserWithEmailAndPassword(auth,email,pass);
+      // Sauvegarder pseudo dans localStorage
+      localStorage.setItem('profile_'+email, JSON.stringify({pseudo, avatar:'👾'}));
+      showMsg('registerMsg','✅ Compte créé !','success');
+      ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
+      setTimeout(()=>window.switchTab('login'),1500);
+    }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
+  }
+
+  window.login=async function(){
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    if(!email||!pass){showMsg('loginMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const result=await signInWithEmailAndPassword(auth,email,pass);
+      document.getElementById('tabsBar').style.display='none';
+      document.getElementById('authContent').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dashEmailText').textContent=result.user.email;
+      document.getElementById('infoEmail').textContent=result.user.email;
+      document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      // Charger pseudo + avatar
+      loadUserProfile(result.user.email);
+    }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
+  }
+
+  window.savePseudo=async function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    saveProfile('pseudo', val);
+    document.getElementById('dashPseudo').textContent=val;
+    document.getElementById('infoPseudo').textContent=val;
+    document.getElementById('setPseudo').value='';
+    showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
+  }
+
+  // Avatar sauvegardé via localStorage
+  window.pickAvatarAndSave=function(emoji){
+    selectedAvatar=emoji;
+    document.getElementById('dashAvatarContent').textContent=emoji;
+    document.getElementById('avatarOverlay').classList.remove('open');
+    saveProfile('avatar', emoji);
+  }
+
+  window.forgotPassword=async function(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
+    try{await sendPasswordResetEmail(auth,email);showMsg('forgotMsg','📧 Email envoyé !','info');document.getElementById('forgotEmail').value='';setTimeout(()=>window.switchTab('login'),2500);}
+    catch(e){showMsg('forgotMsg','❌ '+e.message,'error');}
+  }
+  window.changePassword=async function(){
+    const np=document.getElementById('newPass').value,conf=document.getElementById('newPassConf').value;
+    if(!np||!conf){showMsg('passMsg','⚠️ Remplis les deux champs !','error');return;}
+    if(np.length<6){showMsg('passMsg','⚠️ Min 6 caractères.','error');return;}
+    if(np!==conf){showMsg('passMsg','❌ Mots de passe différents.','error');return;}
+    try{await updatePassword(auth.currentUser,np);showMsg('passMsg','✅ Mot de passe mis à jour !','success');['newPass','newPassConf'].forEach(id=>document.getElementById(id).value='');}
+    catch(e){showMsg('passMsg','❌ '+e.message,'error');}
+  }
+  window.saveEmail=async function(){
+    const newEmail=document.getElementById('setEmail').value.trim();
+    const pass=document.getElementById('setEmailPass').value;
+    if(!newEmail||!pass){showMsg('emailMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('dashEmailText').textContent=newEmail;
+      document.getElementById('infoEmail').textContent=newEmail;
+      showMsg('emailMsg','✅ Email mis à jour !','success');
+      ['setEmail','setEmailPass'].forEach(id=>document.getElementById(id).value='');
+    }catch(e){showMsg('emailMsg','❌ '+e.message,'error');}
+  }
+  window.deleteAccount=async function(){
+    const pass=document.getElementById('deletePass').value;
+    if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
+    try{
+      const email=auth.currentUser.email;
+      const cred=EmailAuthProvider.credential(email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await deleteUser(auth.currentUser);
+      localStorage.removeItem('profile_'+email);
+      document.getElementById('confirmOverlay').classList.remove('open');
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('tabsBar').style.display='flex';
+      document.getElementById('authContent').style.display='block';
+      window.switchTab('login');
+    }catch(e){alert('❌ '+e.message);}
+  }
+  window.logout=async function(){
+    await signOut(auth);
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('tabsBar').style.display='flex';
+    document.getElementById('authContent').style.display='block';
+    ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).value='');
+    window.switchTab('login');
+  }
+</script>
+
+  const app=initializeApp({apiKey:"AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",authDomain:"monlogin-41e0e.firebaseapp.com",projectId:"monlogin-41e0e",storageBucket:"monlogin-41e0e.firebasestorage.app",messagingSenderId:"699665895535",appId:"1:699665895535:web:46931d57611ad69e1a3d9a"});
+  const auth=getAuth(app);
+  const db=getFirestore(app);
+
+  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
+
+  // Charge pseudo + avatar depuis Firestore
+  async function loadUserProfile(uid) {
+    try {
+      const snap = await getDoc(doc(db,'users',uid));
+      if(snap.exists()){
+        const data = snap.data();
+        if(data.pseudo){
+          document.getElementById('dashPseudo').textContent=data.pseudo;
+          document.getElementById('infoPseudo').textContent=data.pseudo;
+        }
+        if(data.avatar){
+          selectedAvatar=data.avatar;
+          document.getElementById('dashAvatarContent').textContent=data.avatar;
+        }
+      }
+    } catch(e){ console.log('Profil non trouvé'); }
+  }
+
+  window.switchTab=function(tab){
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='login'?'loginSection':'registerSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='flex';
+  }
+  window.showForgot=function(){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('forgotSection').classList.add('active');
+    document.getElementById('tabsBar').style.display='none';
+  }
+  window.switchDash=function(tab){
+    document.querySelectorAll('.dash-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='jeux')||(i===1&&tab==='parametres')));
+    document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(tab==='jeux'?'jeuxSection':'parametresSection').classList.add('active');
+  }
+
+  window.register=async function(){
+    const email=document.getElementById('regEmail').value.trim();
+    const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
+    const pass=document.getElementById('regPass').value;
+    const conf=document.getElementById('regPassConfirm').value;
+    if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
+    if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
+    if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
+    try{
+      const result=await createUserWithEmailAndPassword(auth,email,pass);
+      // Sauvegarder pseudo + avatar dans Firestore
+      await setDoc(doc(db,'users',result.user.uid),{pseudo, avatar:'👾', createdAt: new Date().toISOString()});
+      showMsg('registerMsg','✅ Compte créé !','success');
+      ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
+      setTimeout(()=>window.switchTab('login'),1500);
+    }catch(e){showMsg('registerMsg',e.code==='auth/email-already-in-use'?'❌ Email déjà utilisé.':'❌ '+e.message,'error');}
+  }
+
+  window.login=async function(){
+    const email=document.getElementById('loginEmail').value.trim();
+    const pass=document.getElementById('loginPass').value;
+    if(!email||!pass){showMsg('loginMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const result=await signInWithEmailAndPassword(auth,email,pass);
+      document.getElementById('tabsBar').style.display='none';
+      document.getElementById('authContent').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('dashEmailText').textContent=result.user.email;
+      document.getElementById('infoEmail').textContent=result.user.email;
+      document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      // Charger pseudo + avatar sauvegardés
+      await loadUserProfile(result.user.uid);
+    }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
+  }
+
+  // Sauvegarder pseudo dans Firestore
+  window.savePseudo=async function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){showMsg('pseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    try{
+      await updateDoc(doc(db,'users',auth.currentUser.uid),{pseudo:val});
+      document.getElementById('dashPseudo').textContent=val;
+      document.getElementById('infoPseudo').textContent=val;
+      document.getElementById('setPseudo').value='';
+      showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
+    }catch(e){showMsg('pseudoMsg','❌ '+e.message,'error');}
+  }
+
+  // Sauvegarder avatar dans Firestore (override fonction globale)
+  window.pickAvatarAndSave=async function(emoji){
+    selectedAvatar=emoji;
+    document.getElementById('dashAvatarContent').textContent=emoji;
+    document.getElementById('avatarOverlay').classList.remove('open');
+    if(auth.currentUser){
+      try{ await updateDoc(doc(db,'users',auth.currentUser.uid),{avatar:emoji}); }
+      catch(e){ console.log('Avatar save error',e); }
+    }
+  }
+
+  window.forgotPassword=async function(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){showMsg('forgotMsg','⚠️ Entre ton adresse mail !','error');return;}
+    try{await sendPasswordResetEmail(auth,email);showMsg('forgotMsg','📧 Email envoyé !','info');document.getElementById('forgotEmail').value='';setTimeout(()=>window.switchTab('login'),2500);}
+    catch(e){showMsg('forgotMsg','❌ '+e.message,'error');}
+  }
+  window.changePassword=async function(){
+    const np=document.getElementById('newPass').value,conf=document.getElementById('newPassConf').value;
+    if(!np||!conf){showMsg('passMsg','⚠️ Remplis les deux champs !','error');return;}
+    if(np.length<6){showMsg('passMsg','⚠️ Min 6 caractères.','error');return;}
+    if(np!==conf){showMsg('passMsg','❌ Mots de passe différents.','error');return;}
+    try{await updatePassword(auth.currentUser,np);showMsg('passMsg','✅ Mot de passe mis à jour !','success');['newPass','newPassConf'].forEach(id=>document.getElementById(id).value='');}
+    catch(e){showMsg('passMsg','❌ '+e.message,'error');}
+  }
+  window.saveEmail=async function(){
+    const newEmail=document.getElementById('setEmail').value.trim();
+    const pass=document.getElementById('setEmailPass').value;
+    if(!newEmail||!pass){showMsg('emailMsg','⚠️ Remplis tous les champs !','error');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await updateEmail(auth.currentUser,newEmail);
+      document.getElementById('dashEmailText').textContent=newEmail;
+      document.getElementById('infoEmail').textContent=newEmail;
+      showMsg('emailMsg','✅ Email mis à jour !','success');
+      ['setEmail','setEmailPass'].forEach(id=>document.getElementById(id).value='');
+    }catch(e){showMsg('emailMsg','❌ '+e.message,'error');}
+  }
+  window.deleteAccount=async function(){
+    const pass=document.getElementById('deletePass').value;
+    if(!pass){alert('⚠️ Entre ton mot de passe !');return;}
+    try{
+      const cred=EmailAuthProvider.credential(auth.currentUser.email,pass);
+      await reauthenticateWithCredential(auth.currentUser,cred);
+      await deleteDoc(doc(db,'users',auth.currentUser.uid));
+      await deleteUser(auth.currentUser);
+      document.getElementById('confirmOverlay').classList.remove('open');
+      document.getElementById('dashboard').style.display='none';
+      document.getElementById('tabsBar').style.display='flex';
+      document.getElementById('authContent').style.display='block';
+      window.switchTab('login');
+    }catch(e){alert('❌ '+e.message);}
+  }
+  window.logout=async function(){
+    await signOut(auth);
+    document.getElementById('dashboard').style.display='none';
+    document.getElementById('tabsBar').style.display='flex';
+    document.getElementById('authContent').style.display='block';
+    ['loginEmail','loginPass'].forEach(id=>document.getElementById(id).value='');
+    window.switchTab('login');
+  }
+</script>
 
   function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
 
