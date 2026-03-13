@@ -726,7 +726,7 @@
   ];
   let gameSaves={},currentGame=null,editingId=null;
   let _currentEmail='';
- 
+
   function saveAllData(){
     if(!_currentEmail)return;
     localStorage.setItem('data_'+_currentEmail, JSON.stringify({gameSaves, amisList}));
@@ -814,7 +814,6 @@
   document.getElementById('avatarOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
  
   function showDeleteConfirm(){document.getElementById('deletePass').value='';document.getElementById('confirmOverlay').classList.add('open');}
-  function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
   function hideAllMsgs(){document.querySelectorAll('.msg').forEach(m=>m.style.display='none');}
  
   // AMIS
@@ -851,6 +850,23 @@
   function editAmi(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
   function deleteAmi(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
  
+  // AMIS FONCTIONS MANQUANTES
+  window.filterAmis=function(){
+    const q=document.getElementById('amiSearchInput')?document.getElementById('amiSearchInput').value.toLowerCase():'';
+    if(!q){renderAmis();return;}
+    renderAmis(amisList.filter(a=>a.pseudo.toLowerCase().includes(q)||a.tag.toLowerCase().includes(q)||(a.jeu||'').toLowerCase().includes(q)));
+  }
+  window.copyTag=function(tag){
+    navigator.clipboard.writeText(tag).catch(()=>{});
+    const t=document.getElementById('copiedToast');
+    if(t){t.style.display='block';setTimeout(()=>t.style.display='none',1800);}
+  }
+  window.toggleFavori=function(id){
+    const a=amisList.find(x=>x.id===id);
+    if(a){a.favori=!a.favori;saveAllData();}
+    renderAmis();
+  }
+
   window.addEventListener('load',()=>{renderGames(GAMES);renderAmis();});
 </script>
  
@@ -1024,9 +1040,10 @@
   </div>
 </div>
  
+
 <script>
   const _p=document.getElementById("particles");
-  for(let i=0;i<35;i++){const p=document.createElement("div");p.className="particle";p.style.left=Math.random()*100+"%";p.style.animationDuration=(7+Math.random()*10)+"s";p.style.animationDelay=(Math.random()*10)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";p.style.opacity=Math.random()*0.3;_p.appendChild(p);}
+  if(_p){for(let i=0;i<35;i++){const p=document.createElement("div");p.className="particle";p.style.left=Math.random()*100+"%";p.style.animationDuration=(7+Math.random()*10)+"s";p.style.animationDelay=(Math.random()*10)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";p.style.opacity=Math.random()*0.3;_p.appendChild(p);}}
 </script>
 </body>
 </html>
