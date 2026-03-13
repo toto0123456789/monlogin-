@@ -621,6 +621,7 @@
         <div class="save-actions"><button class="btn-icon" onclick="startEdit('${s.id}')">✏️</button><button class="btn-icon" onclick="deleteSave('${s.id}')">🗑️</button></div>
       </div>
       <div class="save-row"><span class="save-key">Identifiant</span><span class="save-val">${s.user}</span></div>
+      ${s.email?`<div class="save-row"><span class="save-key">Email</span><span class="save-val">${s.email}</span></div>`:''}
       <div class="save-row"><span class="save-key">Mot de passe</span><span class="save-val">
         <span id="${sid}" data-pass="${s.pass}" data-hidden="true">${'•'.repeat(s.pass.length)}</span>
         <button class="eye-btn" onclick="toggleSavePass('${sid}',this)">👁️</button>
@@ -630,6 +631,7 @@
       <div class="add-form-title" id="addFormTitle">➕ Nouvelle sauvegarde</div>
       <div class="field"><input type="text" id="savePseudo" placeholder="Pseudo"/></div>
       <div class="field"><input type="text" id="saveUser" placeholder="Identifiant"/></div>
+      <div class="field"><input type="email" id="saveEmail" placeholder="Adresse mail (optionnel)"/></div>
       <div class="field"><div class="pass-wrap"><input type="password" id="savePass" placeholder="Mot de passe"/><button class="pass-toggle" onclick="togglePass('savePass',this)">👁️</button></div></div>
       <div class="form-btns"><button class="btn-save-sm" onclick="confirmSave()">💾 Sauvegarder</button><button class="btn-cancel-sm" onclick="cancelAdd()">Annuler</button></div>
     </div>
@@ -637,18 +639,19 @@
     <button class="btn-close-modal" onclick="closeModal()">Fermer</button>`;
     document.getElementById('modalBody').innerHTML=html;
   }
-  function showAddForm(){editingId=null;['savePseudo','saveUser','savePass'].forEach(id=>document.getElementById(id).value='');document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  function showAddForm(){editingId=null;['savePseudo','saveUser','saveEmail','savePass'].forEach(id=>document.getElementById(id).value='');document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
   function cancelAdd(){editingId=null;document.getElementById('addForm').classList.remove('open');document.getElementById('btnAdd').style.display='block';}
-  function startEdit(id){const s=getSaves(currentGame).find(x=>x.id===id);if(!s)return;editingId=id;document.getElementById('savePseudo').value=s.pseudo;document.getElementById('saveUser').value=s.user;document.getElementById('savePass').value=s.pass;document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  function startEdit(id){const s=getSaves(currentGame).find(x=>x.id===id);if(!s)return;editingId=id;document.getElementById('savePseudo').value=s.pseudo;document.getElementById('saveUser').value=s.user;document.getElementById('saveEmail').value=s.email||'';document.getElementById('savePass').value=s.pass;document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
   function confirmSave(){
     const pseudo=document.getElementById('savePseudo').value.trim();
     const user=document.getElementById('saveUser').value.trim();
+    const email=document.getElementById('saveEmail').value.trim();
     const pass=document.getElementById('savePass').value;
     if(!user||!pass){alert('⚠️ Identifiant et mot de passe requis !');return;}
     const key=getKey(currentGame);
     if(!gameSaves[key])gameSaves[key]=[];
-    if(editingId){const idx=gameSaves[key].findIndex(s=>s.id===editingId);if(idx!==-1)gameSaves[key][idx]={id:editingId,pseudo:pseudo||user,user,pass};}
-    else gameSaves[key].push({id:Date.now().toString(),pseudo:pseudo||user,user,pass});
+    if(editingId){const idx=gameSaves[key].findIndex(s=>s.id===editingId);if(idx!==-1)gameSaves[key][idx]={id:editingId,pseudo:pseudo||user,user,email,pass};}
+    else gameSaves[key].push({id:Date.now().toString(),pseudo:pseudo||user,user,email,pass});
     editingId=null;renderModalBody();filterGames();
     document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';
   }
