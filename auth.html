@@ -92,6 +92,7 @@
     *{margin:0;padding:0;box-sizing:border-box;}
     body{min-height:100vh;background:#0d0d1a;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;transition:background 0.3s;position:relative;}
     .box{background:linear-gradient(145deg,var(--card),var(--card2));border-radius:20px;width:360px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.4);overflow:hidden;transition:all 0.3s;}
+    @media(max-width:400px){.box{width:100%;border-radius:0;min-height:100vh;}.bottom-nav{border-radius:0;position:fixed;}.dash-content{max-height:calc(100vh - 200px);padding-bottom:90px;}body{align-items:flex-start;}}
     .tabs{display:flex;border-bottom:1px solid var(--border);}
     .tab{flex:1;padding:18px;text-align:center;font-size:0.85rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;letter-spacing:1px;transition:all 0.3s;position:relative;}
     .tab.active{color:var(--accent);}
@@ -148,7 +149,9 @@
     .dash-content{padding:20px 24px 80px;max-height:430px;overflow-y:auto;}
     .dash-content::-webkit-scrollbar{width:4px;}
     .dash-content::-webkit-scrollbar-thumb{background:#ff4d9e44;border-radius:2px;}
-    .dash-section{display:none;animation:fadeIn 0.3s ease;}
+    .dash-section{display:none;}
+    .dash-section.active{animation:sectionIn 0.35s cubic-bezier(.34,1.2,.64,1);}
+    @keyframes sectionIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
     .dash-section.active{display:block;}
  
     /* SEARCH */
@@ -163,6 +166,8 @@
     .game-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 15px rgba(255,77,158,0.2);}
     .game-card.has-saves{border-color:rgba(0,255,100,0.3);}
     .save-count{position:absolute;top:6px;right:8px;background:var(--accent);color:#fff;font-size:0.6rem;font-weight:700;padding:2px 6px;border-radius:10px;}
+    .fav-pin{position:absolute;top:6px;left:8px;font-size:0.75rem;}
+    .game-fav{border-color:rgba(255,200,0,0.4)!important;background:rgba(255,200,0,0.04)!important;}
     .game-card .icon{font-size:1.6rem;margin-bottom:6px;}
     .game-card .name{color:var(--text);font-size:0.72rem;font-weight:600;}
     .game-card .status{color:var(--muted);font-size:0.65rem;margin-top:2px;}
@@ -612,7 +617,8 @@
   <div class="modal">
     <div class="modal-header">
       <div class="modal-icon" id="modalIcon"></div>
-      <div><div class="modal-title" id="modalTitle"></div><div class="modal-sub">Mes sauvegardes</div></div>
+      <div style="flex:1"><div class="modal-title" id="modalTitle"></div><div class="modal-sub">Mes sauvegardes</div></div>
+      <button class="btn-icon" id="modalFavBtn" onclick="toggleGameFav()" style="font-size:1.3rem;margin-left:auto;">🤍</button>
     </div>
     <div id="modalBody"></div>
   </div>
@@ -895,12 +901,12 @@
     {icon:'🏔️',name:'Hogwarts Legacy',status:'Action RPG'},
     {icon:'🎮',name:'Fall Guys',status:'Party Game'},
   ];
-  let gameSaves={},currentGame=null,editingId=null;
+  let gameSaves={},gameFavs={},currentGame=null,editingId=null;
   let _currentEmail='';
 
   function saveAllData(){
     if(!_currentEmail)return;
-    localStorage.setItem('data_'+_currentEmail, JSON.stringify({gameSaves, amisList}));
+    localStorage.setItem('data_'+_currentEmail, JSON.stringify({gameSaves, gameFavs, gameNotes, amisList}));
   }
   function loadAllData(email){
     _currentEmail=email;
@@ -908,6 +914,8 @@
     if(saved){
       const data=JSON.parse(saved);
       if(data.gameSaves)gameSaves=data.gameSaves;
+      if(data.gameFavs)gameFavs=data.gameFavs;
+      if(data.gameNotes)gameNotes=data.gameNotes;
       if(data.amisList)amisList=data.amisList;
     }
     filterGames();
@@ -923,18 +931,36 @@
     const grid=document.getElementById('gameGrid'),noResult=document.getElementById('noResult');
     if(!list.length){grid.innerHTML='';noResult.style.display='block';return;}
     noResult.style.display='none';
-    grid.innerHTML=list.map(g=>{const s=getSaves(g.name);return`<div class="game-card ${s.length?'has-saves':''}" onclick="openModal('${g.name}','${g.icon}')">
+    // Favoris en premier
+    const sorted=[...list].sort((a,b)=>(gameFavs[b.name]?1:0)-(gameFavs[a.name]?1:0));
+    grid.innerHTML=sorted.map(g=>{const s=getSaves(g.name);const fav=gameFavs[g.name];return`<div class="game-card ${s.length?'has-saves':''} ${fav?'game-fav':''}" onclick="openModal('${g.name}','${g.icon}')">
       ${s.length?`<span class="save-count">${s.length}</span>`:''}
+      ${fav?'<span class="fav-pin">⭐</span>':''}
       <div class="icon">${g.icon}</div><div class="name">${g.name}</div><div class="status">${g.status}</div>
     </div>`;}).join('');
   }
   window.filterGames=function(){const q=document.getElementById('searchInput').value.toLowerCase();renderGames(GAMES.filter(g=>g.name.toLowerCase().includes(q)));}
  
+  // NOTES PAR JEU
+  let gameNotes={};
+  window.saveNote=function(){
+    if(!currentGame)return;
+    const val=document.getElementById('gameNote').value;
+    gameNotes[getKey(currentGame)]=val;
+    saveAllData();
+  }
+  window.toggleGameFav=function(){
+    gameFavs[currentGame]=!gameFavs[currentGame];
+    document.getElementById('modalFavBtn').textContent=gameFavs[currentGame]?'💛':'🤍';
+    filterGames();saveAllData();
+  }
   window.openModal=function(name,icon){
     currentGame=name;editingId=null;
     document.getElementById('modalIcon').textContent=icon;
     document.getElementById('modalTitle').textContent=name;
+    const fb=document.getElementById('modalFavBtn');if(fb)fb.textContent=gameFavs[name]?'💛':'🤍';
     renderModalBody();
+    setTimeout(()=>{const n=document.getElementById('gameNote');if(n)n.value=gameNotes[getKey(name)]||'';},50);
     document.getElementById('modalOverlay').classList.add('open');
   }
   function renderModalBody(){
@@ -947,7 +973,7 @@
       <div class="save-row"><span class="save-key">Identifiant</span><span class="save-val">${s.user}</span></div>
       ${s.email?`<div class="save-row"><span class="save-key">Email</span><span class="save-val">${s.email}</span></div>`:''}
       <div class="save-row"><span class="save-key">Mot de passe</span><span class="save-val">
-        <span id="${sid}" data-pass="${s.pass}" data-hidden="true">${'•'.repeat(s.pass.length)}</span>
+        <span id="${sid}" data-pass="${decrypt(s.pass)}" data-hidden="true">${'•'.repeat(s.pass.length)}</span>
         <button class="eye-btn" onclick="toggleSavePass('${sid}',this)">👁️</button>
       </span></div>
     </div>`;});
@@ -960,6 +986,10 @@
       <div class="form-btns"><button class="btn-save-sm" onclick="confirmSave()">💾 Sauvegarder</button><button class="btn-cancel-sm" onclick="cancelAdd()">Annuler</button></div>
     </div>
     <button class="btn-add" id="btnAdd" onclick="showAddForm()">➕ Créer une sauvegarde</button>
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+      <div style="color:var(--accent);font-size:0.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">📝 Notes</div>
+      <textarea id="gameNote" placeholder="Ajoute une note pour ce jeu..." onchange="saveNote()" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.78rem;resize:none;height:70px;outline:none;transition:all 0.3s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--input-border)'"></textarea>
+    </div>
     <button class="btn-close-modal" onclick="closeModal()">Fermer</button>`;
     document.getElementById('modalBody').innerHTML=html;
   }
@@ -974,8 +1004,8 @@
     if(!user||!pass){alert('⚠️ Identifiant et mot de passe requis !');return;}
     const key=getKey(currentGame);
     if(!gameSaves[key])gameSaves[key]=[];
-    if(editingId){const idx=gameSaves[key].findIndex(s=>s.id===editingId);if(idx!==-1)gameSaves[key][idx]={id:editingId,pseudo:pseudo||user,user,email,pass};}
-    else gameSaves[key].push({id:Date.now().toString(),pseudo:pseudo||user,user,email,pass});
+    if(editingId){const idx=gameSaves[key].findIndex(s=>s.id===editingId);if(idx!==-1)gameSaves[key][idx]={id:editingId,pseudo:pseudo||user,user,email,pass:encrypt(pass)};}
+    else gameSaves[key].push({id:Date.now().toString(),pseudo:pseudo||user,user,email,pass:encrypt(pass)});
     editingId=null;renderModalBody();filterGames();
     document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';
     saveAllData();
@@ -1026,7 +1056,7 @@
     const statut=document.getElementById('amiStatut')?document.getElementById('amiStatut').value:'offline';
     if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1){const fav=amisList[idx].favori||false;amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji,statut,favori:fav};}}
     else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji,statut,favori:false});
-    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();saveAllData();
+    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();
   }
   window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';if(document.getElementById('amiStatut'))document.getElementById('amiStatut').value=a.statut||'offline';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
   window.deleteAmi=function(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
