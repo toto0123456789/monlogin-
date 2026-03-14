@@ -123,18 +123,29 @@
     .pass-toggle:hover{opacity:1;}
  
     /* DASHBOARD */
-    .dashboard{display:none;animation:fadeIn 0.4s ease;}
+    .dashboard{display:none;animation:fadeIn 0.4s ease;position:relative;}
     .dash-header{background:linear-gradient(135deg,rgba(255,77,158,0.15),rgba(192,57,43,0.1));padding:20px 32px 16px;border-bottom:1px solid var(--border);text-align:center;}
     .dash-avatar-wrap{position:relative;width:70px;margin:0 auto 8px;cursor:pointer;}
     .dash-avatar{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 0 25px rgba(255,77,158,0.4);overflow:hidden;transition:all 0.3s;}
     .avatar-edit{position:absolute;bottom:0;right:0;background:var(--accent);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4);}
     .dash-pseudo{color:var(--text);font-size:0.95rem;font-weight:600;}
     .dash-email-text{color:var(--muted);font-size:0.72rem;margin-top:2px;}
-    .dash-tabs{display:flex;border-bottom:1px solid var(--border);}
-    .dash-tab{flex:1;padding:12px 6px;text-align:center;font-size:0.72rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:transparent;letter-spacing:0.5px;transition:all 0.3s;position:relative;}
-    .dash-tab.active{color:var(--accent);}
-    .dash-tab.active::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:2px;background:var(--accent);border-radius:2px;box-shadow:0 0 10px var(--accent);}
-    .dash-content{padding:20px 24px 24px;max-height:420px;overflow-y:auto;}
+    /* NAVBAR BAS */
+    .dash-tabs{display:none;}
+    .bottom-nav{position:relative;display:flex;align-items:center;justify-content:space-around;background:var(--card2);border-top:1px solid var(--border);padding:10px 16px 12px;border-radius:0 0 20px 20px;}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-size:0.58rem;font-weight:500;letter-spacing:0.5px;padding:4px 10px;border-radius:12px;transition:all 0.3s;position:relative;}
+    .nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:all 0.3s;}
+    .nav-item.active{color:var(--accent);}
+    .nav-item.active svg{stroke:var(--accent);}
+    .nav-icon-wrap{position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;}
+    .nav-bubble{position:absolute;width:36px;height:36px;border-radius:50%;background:rgba(255,77,158,0.12);border:1.5px solid var(--accent);transform:scale(0);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:0 0 12px rgba(255,77,158,0.3);}
+    .nav-item.active .nav-bubble{transform:scale(1);}
+    .nav-item.active .nav-icon-wrap svg{transform:translateY(-2px);filter:drop-shadow(0 0 6px var(--accent));}
+    .nav-bubble{position:absolute;top:-8px;left:50%;transform:translateX(-50%) scale(0);width:44px;height:44px;background:var(--accent);border-radius:50%;opacity:0.15;transition:all 0.3s;z-index:0;}
+    .nav-item.active .nav-bubble{transform:translateX(-50%) scale(1);}
+    .nav-icon-wrap{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:40px;height:40px;}
+    .nav-item.active .nav-icon-wrap svg{transform:translateY(-2px);filter:drop-shadow(0 0 6px var(--accent));}
+    .dash-content{padding:20px 24px 80px;max-height:430px;overflow-y:auto;}
     .dash-content::-webkit-scrollbar{width:4px;}
     .dash-content::-webkit-scrollbar-thumb{background:#ff4d9e44;border-radius:2px;}
     .dash-section{display:none;animation:fadeIn 0.3s ease;}
@@ -321,14 +332,84 @@
       <div class="dash-email-text" id="dashEmailText"></div>
       <div class="dash-email-text" id="dashGamertag" style="color:var(--accent);font-size:0.72rem;margin-top:2px;display:none;">🎮 <span id="dashGamertagText"></span></div>
     </div>
-    <div class="dash-tabs">
-      <button class="dash-tab active" id="dtJeux" onclick="switchDash('jeux')">🎮 Jeux</button>
-      <button class="dash-tab" id="dtAmis" onclick="switchDash('amis')">👥 Amis</button>
-      <button class="dash-tab" id="dtParam" onclick="switchDash('parametres')">⚙️ Paramètres</button>
+    <div class="bottom-nav">
+      <button class="nav-item active" id="navAccueil" onclick="switchDash('accueil')">
+        <div class="nav-bubble">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Accueil</span>
+      </button>
+      <button class="nav-item" id="navJeux" onclick="switchDash('jeux')">
+        <div class="nav-bubble">
+          <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><circle cx="16" cy="10" r="1" fill="currentColor"/><circle cx="18" cy="12" r="1" fill="currentColor"/></svg>
+        </div>
+        <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><circle cx="16" cy="10" r="1" fill="currentColor"/><circle cx="18" cy="12" r="1" fill="currentColor"/></svg>
+        <span>Jeux</span>
+      </button>
+      <button class="nav-item" id="navAmis" onclick="switchDash('amis')">
+        <div class="nav-bubble">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Amis</span>
+      </button>
+      <button class="nav-item" id="navProfil" onclick="switchDash('profil')">
+        <div class="nav-bubble">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Profil</span>
+      </button>
+      <button class="nav-item" id="navParam" onclick="switchDash('parametres')">
+        <div class="nav-bubble">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Réglages</span>
+      </button>
     </div>
     <div class="dash-content">
  
-      <div class="dash-section active" id="jeuxSection">
+      <div class="dash-section active" id="accueilSection">
+        <div style="text-align:center;padding:20px 0 10px;">
+          <div style="font-size:2.5rem;margin-bottom:8px;">🎮</div>
+          <div style="color:var(--text);font-size:1rem;font-weight:700;margin-bottom:4px;">Bienvenue !</div>
+          <div style="color:var(--muted);font-size:0.78rem;margin-bottom:20px;">Gère tes comptes gaming en un seul endroit.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div onclick="switchDash('jeux')" style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--input-border)'">
+            <div style="font-size:1.8rem;margin-bottom:6px;">🎮</div>
+            <div style="color:var(--text);font-size:0.8rem;font-weight:600;">Jeux</div>
+            <div style="color:var(--muted);font-size:0.68rem;margin-top:2px;" id="homeCountJeux">0 sauvegarde(s)</div>
+          </div>
+          <div onclick="switchDash('amis')" style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all 0.3s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--input-border)'">
+            <div style="font-size:1.8rem;margin-bottom:6px;">👥</div>
+            <div style="color:var(--text);font-size:0.8rem;font-weight:600;">Amis</div>
+            <div style="color:var(--muted);font-size:0.68rem;margin-top:2px;" id="homeCountAmis">0 ami(s)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-section" id="profilSection">
+        <div style="text-align:center;padding:10px 0 16px;">
+          <div onclick="openAvatarModal()" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 10px;cursor:pointer;box-shadow:0 0 25px rgba(255,77,158,0.4);" id="profilAvatarBig"><span id="profilAvatarContent">👾</span></div>
+          <div style="color:var(--text);font-size:1rem;font-weight:700;" id="profilPseudo">Joueur</div>
+          <div style="color:var(--muted);font-size:0.72rem;margin-top:2px;" id="profilEmail"></div>
+          <div style="color:var(--accent);font-size:0.72rem;margin-top:2px;display:none;" id="profilGamertag"></div>
+        </div>
+        <div style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:14px;margin-bottom:10px;">
+          <div class="info-row"><span class="info-key">Pseudo</span><span class="info-val" id="infoPseudo2">—</span></div>
+          <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="infoEmail2">—</span></div>
+          <div class="info-row"><span class="info-key">Membre depuis</span><span class="info-val" id="infoDate2">—</span></div>
+          <div class="info-row"><span class="info-key">Dernière connexion</span><span class="info-val" id="infoLastLogin2">—</span></div>
+          <div class="info-row"><span class="info-key">Sauvegardes</span><span class="info-val" id="infoSaves2">0 jeu(x)</span></div>
+        </div>
+        <button class="btn-logout-dash" onclick="switchDash('parametres')" style="margin-bottom:8px;">⚙️ Paramètres</button>
+        <button class="btn-logout-dash" onclick="logout()">🚪 Se déconnecter</button>
+      </div>
+
+      <div class="dash-section" id="jeuxSection">
         <div class="search-wrap">
           <span class="search-icon">🔍</span>
           <input type="text" id="searchInput" placeholder="Rechercher un jeu..." oninput="filterGames()"/>
@@ -374,6 +455,7 @@
           <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="infoEmail">—</span></div>
           <div class="info-row"><span class="info-key">Gamertag</span><span class="info-val" id="infoGamertag">—</span></div>
           <div class="info-row"><span class="info-key">Membre depuis</span><span class="info-val" id="infoDate">—</span></div>
+          <div class="info-row"><span class="info-key">Dernière connexion</span><span class="info-val" id="infoLastLogin">—</span></div>
           <div class="info-row"><span class="info-key">2FA</span><span class="info-val"><span id="info2fa" class="badge off">OFF</span></span></div>
           <div class="info-row"><span class="info-key">Sauvegardes</span><span class="info-val" id="infoSaves">0 jeu(x)</span></div>
         </div>
@@ -471,6 +553,20 @@
           </div>
         </div>
  
+        <!-- COULEUR ACCENT -->
+        <div class="setting-block">
+          <div class="setting-title">🎨 Couleur d'accentuation</div>
+          <div class="color-grid" id="colorGrid">
+            <div class="color-dot active" style="background:#ff4d9e;" onclick="pickAccent('#ff4d9e',this)" title="Rose"></div>
+            <div class="color-dot" style="background:#7c6bff;" onclick="pickAccent('#7c6bff',this)" title="Violet"></div>
+            <div class="color-dot" style="background:#00c2ff;" onclick="pickAccent('#00c2ff',this)" title="Bleu"></div>
+            <div class="color-dot" style="background:#00e676;" onclick="pickAccent('#00e676',this)" title="Vert"></div>
+            <div class="color-dot" style="background:#ff6b35;" onclick="pickAccent('#ff6b35',this)" title="Orange"></div>
+            <div class="color-dot" style="background:#ffd600;" onclick="pickAccent('#ffd600',this)" title="Jaune"></div>
+          </div>
+          <div class="msg" id="accentMsg"></div>
+        </div>
+
         <!-- LANGUE -->
         <div class="setting-block">
           <div class="setting-title">🌍 Langue</div>
@@ -543,6 +639,44 @@
     <div class="confirm-btns">
       <button class="btn-danger" onclick="deleteAccount()" style="flex:1">Supprimer</button>
       <button class="btn-cancel-sm" onclick="document.getElementById('confirmOverlay').classList.remove('open')" style="flex:1">Annuler</button>
+    </div>
+    <!-- NAVBAR BAS -->
+    <div class="bottom-nav">
+      <button class="nav-item active" id="nav-accueil" onclick="switchDash('accueil')">
+        <div class="nav-icon-wrap">
+          <div class="nav-bubble"></div>
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        Accueil
+      </button>
+      <button class="nav-item" id="nav-profil" onclick="switchDash('profil')">
+        <div class="nav-icon-wrap">
+          <div class="nav-bubble"></div>
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        Profil
+      </button>
+      <button class="nav-item" id="nav-jeux" onclick="switchDash('jeux')">
+        <div class="nav-icon-wrap">
+          <div class="nav-bubble"></div>
+          <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M6 12h4M8 10v4M15 12h2M18 12h0"/></svg>
+        </div>
+        Jeux
+      </button>
+      <button class="nav-item" id="nav-amis" onclick="switchDash('amis')">
+        <div class="nav-icon-wrap">
+          <div class="nav-bubble"></div>
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        Amis
+      </button>
+      <button class="nav-item" id="nav-parametres" onclick="switchDash('parametres')">
+        <div class="nav-icon-wrap">
+          <div class="nav-bubble"></div>
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </div>
+        Params
+      </button>
     </div>
   </div>
 </div>
@@ -624,8 +758,6 @@
     document.getElementById('tabRegister').textContent = l.register;
     document.getElementById('titleSignIn').innerHTML = l.signIn+' <span class="heart">♥</span>';
     document.getElementById('titleSignUp').innerHTML = l.signUp+' <span class="heart">♥</span>';
-    document.getElementById('dtJeux').textContent = l.games;
-    document.getElementById('dtParam').textContent = l.settings;
     document.getElementById('searchInput').placeholder = l.search;
     document.getElementById('btnConnect').textContent = l.connect;
     document.getElementById('btnCreate').textContent = l.create;
@@ -656,6 +788,34 @@
   }
  
   // NOTIFICATIONS
+  // COULEUR ACCENT
+  window.pickAccent=function(color, dot){
+    document.documentElement.style.setProperty('--accent', color);
+    // Calculer accent2 (version plus foncée)
+    document.documentElement.style.setProperty('--accent2', color);
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+    dot.classList.add('active');
+    // Sauvegarder
+    const email=document.getElementById('dashEmailText')?.textContent;
+    if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.accent=color;localStorage.setItem(key,JSON.stringify(ex));}
+    window.showMsg('accentMsg','✅ Couleur sauvegardée !','success');
+    setTimeout(()=>{const m=document.getElementById('accentMsg');if(m)m.style.display='none';},1500);
+  }
+
+  window.saveProfilPseudo=function(){
+    const val=document.getElementById('setPseudo').value.trim();
+    if(!val){window.showMsg('profilPseudoMsg','⚠️ Entre un pseudo !','error');return;}
+    document.getElementById('dashPseudo').textContent=val;
+    document.getElementById('infoPseudo').textContent=val;
+    document.getElementById('profilPseudo').textContent=val;
+    document.getElementById('infoPseudo2').textContent=val;
+    document.getElementById('dashPseudo').textContent=val;
+    document.getElementById('setPseudo').value='';
+    const email=document.getElementById('dashEmailText')?.textContent;
+    if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.pseudo=val;localStorage.setItem(key,JSON.stringify(ex));}
+    window.showMsg('profilPseudoMsg','✅ Pseudo sauvegardé !','success');
+  }
+
   window.saveNotif=function(){
     showMsg('notifMsg','✅ Préférences sauvegardées !','success');
     setTimeout(()=>{const m=document.getElementById('notifMsg');if(m)m.style.display='none';},2000);
@@ -830,18 +990,26 @@
  
   // AMIS
   let amisList = [], editingAmiId = null;
-  window.renderAmis=function(){
-    const list=document.getElementById('amisList');
-    if(!amisList.length){list.innerHTML='<div class="ami-empty">Aucun ami ajouté.<br>Ajoute-en un ! 👇</div>';return;}
-    list.innerHTML=amisList.map(a=>`
-      <div class="ami-item">
-        <div class="ami-avatar">${a.emoji||'👾'}</div>
+  window.renderAmis=function(filtered){
+    const el=document.getElementById('amisList');
+    const src=filtered||amisList;
+    if(!src.length){el.innerHTML='<div class="ami-empty">'+(filtered?'Aucun résultat 😕':'Aucun ami ajouté.<br>Ajoute-en un ! 👇')+'</div>';return;}
+    const sorted=[...src].sort((a,b)=>(b.favori?1:0)-(a.favori?1:0));
+    const STATUT_LABELS={online:'🟢 En ligne',ingame:'🟡 En jeu',offline:'⚫ Hors ligne'};
+    el.innerHTML=sorted.map(a=>`
+      <div class="ami-item${a.favori?' favori':''}">
+        <div class="ami-avatar" style="position:relative;">
+          ${a.emoji||'👾'}
+          <div class="ami-statut ${a.statut||'offline'}"></div>
+        </div>
         <div class="ami-info">
-          <div class="ami-pseudo">${a.pseudo}</div>
-          <div class="ami-tag">🎮 ${a.tag}</div>
-          ${a.jeu?`<div class="ami-jeu">⭐ ${a.jeu}</div>`:''}
+          <div class="ami-pseudo">${a.pseudo}${a.favori?' <span style="color:#ffc800;font-size:0.75rem;">⭐</span>':''}</div>
+          <div class="ami-tag">🎮 ${a.tag} <button class="copy-btn" onclick="copyTag('${a.tag}')">📋</button></div>
+          ${a.jeu?`<div class="ami-jeu">🕹️ ${a.jeu}</div>`:''}
+          <div class="ami-statut-label ${a.statut||'offline'}">${STATUT_LABELS[a.statut||'offline']}</div>
         </div>
         <div class="ami-actions">
+          <button class="btn-icon" onclick="toggleFavori('${a.id}')">${a.favori?'💛':'🤍'}</button>
           <button class="btn-icon" onclick="editAmi('${a.id}')">✏️</button>
           <button class="btn-icon" onclick="deleteAmi('${a.id}')">🗑️</button>
         </div>
@@ -855,11 +1023,12 @@
     const jeu=document.getElementById('amiJeu').value.trim();
     const emoji=document.getElementById('amiEmoji').value.trim()||'👾';
     if(!pseudo||!tag){alert('⚠️ Pseudo et Gamertag requis !');return;}
-    if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1)amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji};}
-    else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji});
+    const statut=document.getElementById('amiStatut')?document.getElementById('amiStatut').value:'offline';
+    if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1){const fav=amisList[idx].favori||false;amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji,statut,favori:fav};}}
+    else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji,statut,favori:false});
     editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();saveAllData();
   }
-  window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';if(document.getElementById('amiStatut'))document.getElementById('amiStatut').value=a.statut||'offline';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
   window.deleteAmi=function(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
  
   // AMIS FONCTIONS MANQUANTES
@@ -900,10 +1069,26 @@
       if(data.pseudo){
         document.getElementById('dashPseudo').textContent=data.pseudo;
         document.getElementById('infoPseudo').textContent=data.pseudo;
+        document.getElementById('profilPseudo').textContent=data.pseudo;
+        document.getElementById('infoPseudo2').textContent=data.pseudo;
+        document.getElementById('dashPseudo').textContent=data.pseudo;
       }
       if(data.avatar){
         selectedAvatar=data.avatar;
         document.getElementById('dashAvatarContent').textContent=data.avatar;
+      }
+      if(data.accent){
+        document.documentElement.style.setProperty('--accent', data.accent);
+        document.documentElement.style.setProperty('--accent2', data.accent);
+        document.querySelectorAll('.color-dot').forEach(d=>{
+          if(d.getAttribute('onclick')&&d.getAttribute('onclick').includes(data.accent))d.classList.add('active');
+          else d.classList.remove('active');
+        });
+      }
+      if(data.lastLogin){
+        document.getElementById('infoLastLogin').textContent=data.lastLogin;
+        document.getElementById('infoLastLogin2').textContent=data.lastLogin;
+        document.getElementById('infoLastLogin').textContent=data.lastLogin;
       }
       if(data.gamertag){
         document.getElementById('dashGamertagText').textContent=data.gamertag;
@@ -935,11 +1120,32 @@
     document.getElementById('tabsBar').style.display='none';
   }
   window.switchDash=function(tab){
-    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.dash-section').forEach(s=>s.classList.remove('active'));
-    if(tab==='jeux'){document.getElementById('dtJeux').classList.add('active');document.getElementById('jeuxSection').classList.add('active');}
-    else if(tab==='amis'){document.getElementById('dtAmis').classList.add('active');document.getElementById('amisSection').classList.add('active');}
-    else{document.getElementById('dtParam').classList.add('active');document.getElementById('parametresSection').classList.add('active');}
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const map={accueil:'accueilSection',profil:'profilSection',jeux:'jeuxSection',amis:'amisSection',parametres:'parametresSection'};
+    const navMap={accueil:'navAccueil',profil:'navProfil',jeux:'navJeux',amis:'navAmis',parametres:'navParam'};
+    if(map[tab])document.getElementById(map[tab]).classList.add('active');
+    if(navMap[tab])document.getElementById(navMap[tab]).classList.add('active');
+    // Mettre à jour la section profil
+    if(tab==='profil'||tab==='accueil'){
+      const pseudo=document.getElementById('dashPseudo')?.textContent;
+      const email=document.getElementById('dashEmailText')?.textContent;
+      const avatar=document.getElementById('dashAvatarContent')?.textContent;
+      const saves=document.getElementById('infoSaves')?.textContent;
+      if(pseudo){document.getElementById('profilPseudo').textContent=pseudo;document.getElementById('infoPseudo2').textContent=pseudo;}
+      if(email){document.getElementById('profilEmail').textContent=email;document.getElementById('infoEmail2').textContent=email;}
+      if(avatar)document.getElementById('profilAvatarContent').textContent=avatar;
+      if(saves){document.getElementById('infoSaves2').textContent=saves;}
+      const date=document.getElementById('infoDate')?.textContent;
+      if(date)document.getElementById('infoDate2').textContent=date;
+      const last=document.getElementById('infoLastLogin')?.textContent;
+      if(last)document.getElementById('infoLastLogin2').textContent=last;
+      const gtag=document.getElementById('dashGamertagText')?.textContent;
+      if(gtag){document.getElementById('profilGamertag').textContent='🎮 '+gtag;document.getElementById('profilGamertag').style.display='block';}
+      // Mettre à jour compteurs accueil
+      document.getElementById('homeCountJeux').textContent=saves||'0 sauvegarde(s)';
+      document.getElementById('homeCountAmis').textContent=amisList.length+' ami(s)';
+    }
   }
  
   window.register=async function(){
@@ -972,6 +1178,16 @@
       document.getElementById('dashEmailText').textContent=result.user.email;
       document.getElementById('infoEmail').textContent=result.user.email;
       document.getElementById('infoDate').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      document.getElementById('infoDate2').textContent=new Date(result.user.metadata.creationTime).toLocaleDateString();
+      document.getElementById('profilEmail').textContent=result.user.email;
+      document.getElementById('infoEmail2').textContent=result.user.email;
+      // Sauvegarder dernière connexion
+      const now=new Date().toLocaleString('fr-FR');
+      document.getElementById('infoLastLogin').textContent=now;
+      const _lk='profile_'+result.user.email;
+      const _ld=JSON.parse(localStorage.getItem(_lk)||'{}');
+      _ld.lastLogin=now;
+      localStorage.setItem(_lk,JSON.stringify(_ld));
       // Charger pseudo + avatar
       loadUserProfile(result.user.email);
       loadAllData(result.user.email);
@@ -984,6 +1200,8 @@
     saveProfile('pseudo', val);
     document.getElementById('dashPseudo').textContent=val;
     document.getElementById('infoPseudo').textContent=val;
+    document.getElementById('profilPseudo').textContent=val;
+    document.getElementById('infoPseudo2').textContent=val;
     document.getElementById('setPseudo').value='';
     showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
   }
