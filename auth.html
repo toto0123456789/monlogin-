@@ -280,8 +280,8 @@
   <div class="corner corner-br"></div>
   <div class="box" id="mainBox">
   <div class="tabs" id="tabsBar">
-    <button class="tab active" id="tabLogin">Connexion</button>
-    <button class="tab" id="tabRegister">S'inscrire</button>
+    <button class="tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+    <button class="tab" id="tabRegister" onclick="switchTab('register')">S'inscrire</button>
   </div>
   <div class="content" id="authContent">
     <div class="section active" id="loginSection">
@@ -339,6 +339,10 @@
  
  
       <div class="dash-section" id="amisSection">
+        <div style="position:relative;margin-bottom:12px;">
+          <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:0.85rem;pointer-events:none;">🔍</span>
+          <input type="text" id="amiSearchInput" placeholder="Rechercher un ami..." oninput="filterAmis()" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 16px 10px 34px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.8rem;outline:none;transition:all 0.3s;"/>
+        </div>
         <div id="amisList"></div>
         <div class="add-ami-form" id="addAmiForm" style="display:none;">
           <div class="add-form-title">➕ Ajouter un ami</div>
@@ -346,6 +350,13 @@
           <div class="field"><input type="text" id="amiTag" placeholder="Gamertag (ex: Player#1234)"/></div>
           <div class="field"><input type="text" id="amiJeu" placeholder="Jeu favori (optionnel)"/></div>
           <div class="field"><input type="text" id="amiEmoji" placeholder="Avatar emoji (ex: 🦊)"/></div>
+          <div class="field">
+            <select id="amiStatut" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.8rem;outline:none;">
+              <option value="offline">⚫ Hors ligne</option>
+              <option value="online">🟢 En ligne</option>
+              <option value="ingame">🟡 En jeu</option>
+            </select>
+          </div>
           <div class="form-btns">
             <button class="btn-save-sm" onclick="confirmAddAmi()">💾 Sauvegarder</button>
             <button class="btn-cancel-sm" onclick="cancelAddAmi()">Annuler</button>
@@ -547,7 +558,7 @@
   const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','🦄','🤖','👻','💀','🧙','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
   let selectedAvatar = '👾';
  
-  function openAvatarModal() {
+  window.openAvatarModal=function() {
     const grid = document.getElementById('avatarGrid');
     grid.innerHTML = AVATARS.map(a=>`
       <div class="av-item ${a===selectedAvatar?'selected':''}" onclick="pickAvatar('${a}')">${a}</div>
@@ -555,13 +566,13 @@
     document.getElementById('avatarOverlay').classList.add('open');
   }
  
-  function pickAvatar(emoji) {
+  window.pickAvatar=function(emoji) {
     if(window.pickAvatarAndSave) window.pickAvatarAndSave(emoji);
     else { selectedAvatar=emoji; document.getElementById('dashAvatarContent').textContent=emoji; document.getElementById('avatarOverlay').classList.remove('open'); }
   }
  
   // THEME
-  function toggleTheme() {
+  window.toggleTheme=function() {
     const isLight = document.getElementById('themeToggle').checked;
     document.body.classList.toggle('light', isLight);
     document.getElementById('themeLabel').textContent = isLight ? T('modeLight') : T('modeDark');
@@ -582,13 +593,13 @@
   function T(key){ return (LANG_DATA[curLang]||LANG_DATA.fr)[key]||key; }
  
   // LANG CUSTOM DROPDOWN
-  function toggleLangMenu() {
+  window.toggleLangMenu=function() {
     const menu = document.getElementById('langMenu');
     const arrow = document.getElementById('langArrow');
     menu.classList.toggle('open');
     arrow.classList.toggle('open');
   }
-  function pickLang(code, flag, name) {
+  window.pickLang=function(code, flag, name) {
     document.getElementById('langFlag').textContent = flag;
     document.getElementById('langName').textContent = name;
     document.getElementById('langMenu').classList.remove('open');
@@ -605,7 +616,7 @@
     }
   });
  
-  function changeLang() {
+  window.changeLang=function() {
     const l = LANG_DATA[curLang]||LANG_DATA.fr;
     const isRTL = curLang==='ar';
     document.body.dir = isRTL?'rtl':'ltr';
@@ -631,7 +642,7 @@
   // PSEUDO — géré par Firebase (voir script module)
  
   // GAMERTAG
-  function saveGamertag(){
+  window.saveGamertag=function(){
     const val=document.getElementById('setGamertag').value.trim();
     if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
     document.getElementById('dashGamertagText').textContent=val;
@@ -645,14 +656,14 @@
   }
  
   // NOTIFICATIONS
-  function saveNotif(){
+  window.saveNotif=function(){
     showMsg('notifMsg','✅ Préférences sauvegardées !','success');
     setTimeout(()=>{const m=document.getElementById('notifMsg');if(m)m.style.display='none';},2000);
   }
  
   // 2FA RÉALISTE
   let tfaEnabled=false, tfaCode='';
-  function start2FA(){
+  window.start2FA=function(){
     tfaCode = String(Math.floor(100000+Math.random()*900000));
     document.getElementById('tfaRealCode').textContent = tfaCode;
     document.getElementById('tfa-step1').style.display='none';
@@ -660,15 +671,15 @@
     document.querySelectorAll('.tfa-digit').forEach(d=>{d.value='';d.classList.remove('filled');});
     setTimeout(()=>document.querySelectorAll('.tfa-digit')[0].focus(), 100);
   }
-  function tfaNext(input, idx){
+  window.tfaNext=function(input, idx){
     input.value = input.value.replace(/[^0-9]/g,'').slice(-1);
     if(input.value){ input.classList.add('filled'); const digits=document.querySelectorAll('.tfa-digit'); if(idx<5) digits[idx+1].focus(); }
     else input.classList.remove('filled');
   }
-  function tfaBack(e, idx){
+  window.tfaBack=function(e, idx){
     if(e.key==='Backspace'){const digits=document.querySelectorAll('.tfa-digit');digits[idx].value='';digits[idx].classList.remove('filled');if(idx>0)digits[idx-1].focus();}
   }
-  function verify2FA(){
+  window.verify2FA=function(){
     const entered = [...document.querySelectorAll('.tfa-digit')].map(d=>d.value).join('');
     if(entered.length<6){showMsg('tfaMsg','⚠️ Entre les 6 chiffres !','error');return;}
     if(entered===tfaCode){
@@ -684,11 +695,11 @@
       showMsg('tfaMsg','❌ Code incorrect, réessaie !','error');
     }
   }
-  function cancel2FA(){
+  window.cancel2FA=function(){
     document.getElementById('tfa-step2').style.display='none';
     document.getElementById('tfa-step1').style.display='block';
   }
-  function disable2FA(){
+  window.disable2FA=function(){
     tfaEnabled=false; tfaCode='';
     document.getElementById('tfa-step3').style.display='none';
     document.getElementById('tfa-step1').style.display='block';
@@ -698,8 +709,8 @@
   }
  
   // TOGGLE PASS
-  function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.style.opacity=i.type==='text'?'1':'0.5';}
-  function toggleSavePass(sid,btn){const s=document.getElementById(sid);const h=s.dataset.hidden==='true';s.textContent=h?s.dataset.pass:'•'.repeat(s.dataset.pass.length);s.dataset.hidden=h?'false':'true';btn.style.opacity=h?'1':'0.5';}
+  window.togglePass=function(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.style.opacity=i.type==='text'?'1':'0.5';}
+  window.toggleSavePass=function(sid,btn){const s=document.getElementById(sid);const h=s.dataset.hidden==='true';s.textContent=h?s.dataset.pass:'•'.repeat(s.dataset.pass.length);s.dataset.hidden=h?'false':'true';btn.style.opacity=h?'1':'0.5';}
  
   // JEUX
   const GAMES=[
@@ -726,7 +737,7 @@
   ];
   let gameSaves={},currentGame=null,editingId=null;
   let _currentEmail='';
-
+ 
   function saveAllData(){
     if(!_currentEmail)return;
     localStorage.setItem('data_'+_currentEmail, JSON.stringify({gameSaves, amisList}));
@@ -742,12 +753,13 @@
     filterGames();
     renderAmis();
     document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';
+    saveAllData();
   }
   function getKey(n){return n.replace(/\s/g,'_');}
   function getSaves(n){return gameSaves[getKey(n)]||[];}
   function countAllSaves(){return Object.values(gameSaves).reduce((a,b)=>a+b.length,0);}
  
-  function renderGames(list){
+  window.renderGames=function(list){
     const grid=document.getElementById('gameGrid'),noResult=document.getElementById('noResult');
     if(!list.length){grid.innerHTML='';noResult.style.display='block';return;}
     noResult.style.display='none';
@@ -756,9 +768,9 @@
       <div class="icon">${g.icon}</div><div class="name">${g.name}</div><div class="status">${g.status}</div>
     </div>`;}).join('');
   }
-  function filterGames(){const q=document.getElementById('searchInput').value.toLowerCase();renderGames(GAMES.filter(g=>g.name.toLowerCase().includes(q)));}
+  window.filterGames=function(){const q=document.getElementById('searchInput').value.toLowerCase();renderGames(GAMES.filter(g=>g.name.toLowerCase().includes(q)));}
  
-  function openModal(name,icon){
+  window.openModal=function(name,icon){
     currentGame=name;editingId=null;
     document.getElementById('modalIcon').textContent=icon;
     document.getElementById('modalTitle').textContent=name;
@@ -791,10 +803,10 @@
     <button class="btn-close-modal" onclick="closeModal()">Fermer</button>`;
     document.getElementById('modalBody').innerHTML=html;
   }
-  function showAddForm(){editingId=null;['savePseudo','saveUser','saveEmail','savePass'].forEach(id=>document.getElementById(id).value='');document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
-  function cancelAdd(){editingId=null;document.getElementById('addForm').classList.remove('open');document.getElementById('btnAdd').style.display='block';}
-  function startEdit(id){const s=getSaves(currentGame).find(x=>x.id===id);if(!s)return;editingId=id;document.getElementById('savePseudo').value=s.pseudo;document.getElementById('saveUser').value=s.user;document.getElementById('saveEmail').value=s.email||'';document.getElementById('savePass').value=s.pass;document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
-  function confirmSave(){
+  window.showAddForm=function(){editingId=null;['savePseudo','saveUser','saveEmail','savePass'].forEach(id=>document.getElementById(id).value='');document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  window.cancelAdd=function(){editingId=null;document.getElementById('addForm').classList.remove('open');document.getElementById('btnAdd').style.display='block';}
+  window.startEdit=function(id){const s=getSaves(currentGame).find(x=>x.id===id);if(!s)return;editingId=id;document.getElementById('savePseudo').value=s.pseudo;document.getElementById('saveUser').value=s.user;document.getElementById('saveEmail').value=s.email||'';document.getElementById('savePass').value=s.pass;document.getElementById('addForm').classList.add('open');document.getElementById('btnAdd').style.display='none';}
+  window.confirmSave=function(){
     const pseudo=document.getElementById('savePseudo').value.trim();
     const user=document.getElementById('saveUser').value.trim();
     const email=document.getElementById('saveEmail').value.trim();
@@ -808,17 +820,17 @@
     document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';
     saveAllData();
   }
-  function deleteSave(id){const key=getKey(currentGame);gameSaves[key]=(gameSaves[key]||[]).filter(s=>s.id!==id);renderModalBody();filterGames();document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';saveAllData();}
-  function closeModal(){document.getElementById('modalOverlay').classList.remove('open');currentGame=null;editingId=null;}
+  window.deleteSave=function(id){const key=getKey(currentGame);gameSaves[key]=(gameSaves[key]||[]).filter(s=>s.id!==id);renderModalBody();filterGames();document.getElementById('infoSaves').textContent=countAllSaves()+' jeu(x)';saveAllData();}
+  window.closeModal=function(){document.getElementById('modalOverlay').classList.remove('open');currentGame=null;editingId=null;}
   document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
   document.getElementById('avatarOverlay').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
  
-  function showDeleteConfirm(){document.getElementById('deletePass').value='';document.getElementById('confirmOverlay').classList.add('open');}
+  window.showDeleteConfirm=function(){document.getElementById('deletePass').value='';document.getElementById('confirmOverlay').classList.add('open');}
   function hideAllMsgs(){document.querySelectorAll('.msg').forEach(m=>m.style.display='none');}
  
   // AMIS
   let amisList = [], editingAmiId = null;
-  function renderAmis(){
+  window.renderAmis=function(){
     const list=document.getElementById('amisList');
     if(!amisList.length){list.innerHTML='<div class="ami-empty">Aucun ami ajouté.<br>Ajoute-en un ! 👇</div>';return;}
     list.innerHTML=amisList.map(a=>`
@@ -835,9 +847,9 @@
         </div>
       </div>`).join('');
   }
-  function showAddAmiForm(){editingAmiId=null;['amiPseudo','amiTag','amiJeu','amiEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
-  function cancelAddAmi(){editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';}
-  function confirmAddAmi(){
+  window.showAddAmiForm=function(){editingAmiId=null;['amiPseudo','amiTag','amiJeu','amiEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  window.cancelAddAmi=function(){editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';}
+  window.confirmAddAmi=function(){
     const pseudo=document.getElementById('amiPseudo').value.trim();
     const tag=document.getElementById('amiTag').value.trim();
     const jeu=document.getElementById('amiJeu').value.trim();
@@ -845,10 +857,10 @@
     if(!pseudo||!tag){alert('⚠️ Pseudo et Gamertag requis !');return;}
     if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1)amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji};}
     else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji});
-    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();
+    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();saveAllData();
   }
-  function editAmi(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
-  function deleteAmi(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
+  window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  window.deleteAmi=function(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
  
   // AMIS FONCTIONS MANQUANTES
   window.filterAmis=function(){
@@ -866,7 +878,7 @@
     if(a){a.favori=!a.favori;saveAllData();}
     renderAmis();
   }
-
+ 
   window.addEventListener('load',()=>{renderGames(GAMES);renderAmis();});
 </script>
  
@@ -1040,11 +1052,12 @@
   </div>
 </div>
  
-
+ 
 <script>
   const _p=document.getElementById("particles");
   if(_p){for(let i=0;i<35;i++){const p=document.createElement("div");p.className="particle";p.style.left=Math.random()*100+"%";p.style.animationDuration=(7+Math.random()*10)+"s";p.style.animationDelay=(Math.random()*10)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";p.style.opacity=Math.random()*0.3;_p.appendChild(p);}}
 </script>
+<div id="copiedToast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:9px 20px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(255,77,158,0.4);">📋 Copié !</div>
 </body>
 </html>
  
