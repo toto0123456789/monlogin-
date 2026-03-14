@@ -1248,7 +1248,7 @@
 <script type="module">
   import{initializeApp}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
   import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,sendPasswordResetEmail,updatePassword,updateEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser,signOut}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
-  import{getFirestore,doc,setDoc,getDoc,updateDoc,deleteDoc,collection,getDocs,query,orderBy}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+  import{getFirestore,doc,setDoc,getDoc,updateDoc,deleteDoc,collection,getDocs,query,orderBy,onSnapshot}from"https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
  
   const app=initializeApp({apiKey:"AIzaSyCm26ejmDZghPfnmNW9hOp71Z3NVnchZXc",authDomain:"monlogin-41e0e.firebaseapp.com",projectId:"monlogin-41e0e",storageBucket:"monlogin-41e0e.firebasestorage.app",messagingSenderId:"699665895535",appId:"1:699665895535:web:46931d57611ad69e1a3d9a"});
   const auth=getAuth(app);
@@ -1412,19 +1412,8 @@
       // Charger pseudo + avatar
       loadUserProfile(result.user.email);
       loadAllData(result.user.email);
-      // Vérifier messages admin
-      try{
-        const msgsSnap=await getDocs(collection(db,'messages'));
-        msgsSnap.forEach(async m=>{
-          const data=m.data();
-          if((data.to===result.user.uid||data.to===result.user.email)&&!data.read){
-            setTimeout(()=>{
-              showAdminMessage(data.text);
-              updateDoc(doc(db,'messages',m.id),{read:true}).catch(()=>{});
-            },1500);
-          }
-        });
-      }catch(e){}
+      // Écoute temps réel des messages
+      try{startMessagesListener(result.user.uid, result.user.email);}catch(e){}
     }catch(e){showMsg('loginMsg','❌ Email ou mot de passe incorrect.','error');}
   }
  
@@ -1494,84 +1483,102 @@
   }
   // ===== ADMIN =====
   let allAdminUsers = [];
+  let adminUnsubscribe = null;
 
   // Popup message admin reçu
   window.showAdminMessage=function(text){
     const overlay=document.createElement('div');
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:center;justify-content:center;';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.2s ease;';
     overlay.innerHTML=`<div style="background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid var(--accent);border-radius:18px;padding:28px 24px;width:280px;text-align:center;animation:slideUp 0.3s ease;">
       <div style="font-size:2rem;margin-bottom:10px;">📨</div>
       <div style="color:var(--accent);font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Message de l'Admin</div>
       <p style="color:var(--text);font-size:0.82rem;line-height:1.6;margin-bottom:18px;">${text}</p>
-      <button onclick="this.closest('div').parentElement.remove()" style="width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">OK</button>
+      <button onclick="this.closest('div').parentElement.remove()" style="width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">OK ✓</button>
     </div>`;
     document.body.appendChild(overlay);
   }
 
-  window.loadAdminUsers=async function(){
-    try{
-      const snap=await getDocs(collection(db,'users'));
+  // Démarrer l'écoute temps réel des users (admin)
+  function startAdminListener(){
+    if(adminUnsubscribe)adminUnsubscribe(); // stopper l'ancien listener
+    adminUnsubscribe = onSnapshot(collection(db,'users'), snap=>{
       allAdminUsers=[];
       snap.forEach(d=>allAdminUsers.push({uid:d.id,...d.data()}));
-      // Stats
       document.getElementById('adminTotalUsers').textContent=allAdminUsers.length;
       document.getElementById('adminTotalBanned').textContent=allAdminUsers.filter(u=>u.banned).length;
-      renderAdminUsers(allAdminUsers);
-    }catch(e){console.error(e);}
+      const q=document.getElementById('adminSearch')?.value?.toLowerCase()||'';
+      if(q) window.filterAdminUsers();
+      else window.renderAdminUsers(allAdminUsers);
+    }, err=>console.error('Admin listener:', err));
+  }
+
+  // Écoute temps réel des messages non lus
+  function startMessagesListener(uid, email){
+    onSnapshot(collection(db,'messages'), snap=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added'){
+          const data=change.doc.data();
+          if((data.to===uid||data.to===email)&&!data.read){
+            window.showAdminMessage(data.text);
+            updateDoc(doc(db,'messages',change.doc.id),{read:true}).catch(()=>{});
+          }
+        }
+      });
+    });
+  }
+
+  window.loadAdminUsers=function(){
+    startAdminListener();
   }
 
   window.renderAdminUsers=function(list){
     const el=document.getElementById('adminUserList');
-    if(!list.length){el.innerHTML='<div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px;">Aucun utilisateur</div>';return;}
+    if(!el)return;
+    if(!list.length){el.innerHTML='<div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px;">Aucun utilisateur trouvé</div>';return;}
     el.innerHTML=list.map(u=>`
       <div class="admin-user-item ${u.banned?'banned':''}">
         <div class="admin-user-top">
           <div>
-            <div class="admin-user-pseudo">${u.banned?'🚫 ':''} ${u.pseudo||'Joueur'}</div>
-            <div class="admin-user-email">${u.email}</div>
+            <div class="admin-user-pseudo">${u.banned?'🚫 ':''}${u.pseudo||'Joueur'}</div>
+            <div class="admin-user-email">${u.email||'—'}</div>
           </div>
           <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
         </div>
         <div class="admin-user-actions">
           ${u.banned
-            ? `<button class="btn-unban" onclick="unbanUser('${u.uid}')">✅ Débannir</button>`
-            : `<button class="btn-ban" onclick="banUser('${u.uid}')">🚫 Bannir</button>`
+            ?`<button class="btn-unban" onclick="unbanUser('${u.uid}')">✅ Débannir</button>`
+            :`<button class="btn-ban" onclick="banUser('${u.uid}')">🚫 Bannir</button>`
           }
-          <button class="btn-msg-user" onclick="prefillMsg('${u.uid}','${u.pseudo||u.email}')">💬 Message</button>
+          <button class="btn-msg-user" onclick="prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
         </div>
       </div>`).join('');
   }
 
   window.filterAdminUsers=function(){
-    const q=document.getElementById('adminSearch').value.toLowerCase();
-    renderAdminUsers(allAdminUsers.filter(u=>
+    const q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
+    window.renderAdminUsers(allAdminUsers.filter(u=>
       (u.pseudo||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)
     ));
   }
 
   window.banUser=async function(uid){
     if(!confirm('Bannir cet utilisateur ?'))return;
-    try{
-      await updateDoc(doc(db,'users',uid),{banned:true});
-      const u=allAdminUsers.find(x=>x.uid===uid);if(u)u.banned=true;
-      document.getElementById('adminTotalBanned').textContent=allAdminUsers.filter(u=>u.banned).length;
-      renderAdminUsers(allAdminUsers);
-    }catch(e){alert('Erreur: '+e.message);}
+    try{await updateDoc(doc(db,'users',uid),{banned:true});}
+    catch(e){alert('Erreur: '+e.message);}
   }
 
   window.unbanUser=async function(uid){
-    try{
-      await updateDoc(doc(db,'users',uid),{banned:false});
-      const u=allAdminUsers.find(x=>x.uid===uid);if(u)u.banned=false;
-      document.getElementById('adminTotalBanned').textContent=allAdminUsers.filter(u=>u.banned).length;
-      renderAdminUsers(allAdminUsers);
-    }catch(e){alert('Erreur: '+e.message);}
+    if(!confirm('Débannir ?'))return;
+    try{await updateDoc(doc(db,'users',uid),{banned:false});}
+    catch(e){alert('Erreur: '+e.message);}
   }
 
   window.prefillMsg=function(uid, name){
-    document.getElementById('adminMsgTarget').value=uid;
-    document.getElementById('adminMsgText').focus();
     switchDash('admin');
+    setTimeout(()=>{
+      document.getElementById('adminMsgTarget').value=uid;
+      document.getElementById('adminMsgText').focus();
+    },100);
   }
 
   window.sendAdminMsg=async function(){
@@ -1580,7 +1587,8 @@
     if(!target||!text){showMsg('adminMsgStatus','⚠️ Remplis tous les champs !','error');return;}
     try{
       await setDoc(doc(db,'messages',Date.now().toString()),{
-        to:target, from:ADMIN_EMAIL, text, date:new Date().toISOString(), read:false
+        to:target, from:ADMIN_EMAIL, text,
+        date:new Date().toLocaleString('fr-FR'), read:false
       });
       showMsg('adminMsgStatus','✅ Message envoyé !','success');
       document.getElementById('adminMsgText').value='';
