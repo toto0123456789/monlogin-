@@ -345,7 +345,7 @@
         </div>
         <div id="amisList"></div>
         <div class="add-ami-form" id="addAmiForm" style="display:none;">
-          <div class="add-form-title">➕ Ajouter un ami</div>
+          <div class="add-form-title" id="addAmiTitle">➕ Ajouter un ami</div>
           <div class="field"><input type="text" id="amiPseudo" placeholder="Pseudo"/></div>
           <div class="field"><input type="text" id="amiTag" placeholder="Gamertag (ex: Player#1234)"/></div>
           <div class="field"><input type="text" id="amiJeu" placeholder="Jeu favori (optionnel)"/></div>
@@ -737,7 +737,7 @@
   ];
   let gameSaves={},currentGame=null,editingId=null;
   let _currentEmail='';
- 
+
   function saveAllData(){
     if(!_currentEmail)return;
     localStorage.setItem('data_'+_currentEmail, JSON.stringify({gameSaves, amisList}));
@@ -878,7 +878,7 @@
     if(a){a.favori=!a.favori;saveAllData();}
     renderAmis();
   }
- 
+
   window.addEventListener('load',()=>{renderGames(GAMES);renderAmis();});
 </script>
  
@@ -1052,7 +1052,7 @@
   </div>
 </div>
  
- 
+
 <script>
   const _p=document.getElementById("particles");
   if(_p){for(let i=0;i<35;i++){const p=document.createElement("div");p.className="particle";p.style.left=Math.random()*100+"%";p.style.animationDuration=(7+Math.random()*10)+"s";p.style.animationDelay=(Math.random()*10)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";p.style.opacity=Math.random()*0.3;_p.appendChild(p);}}
