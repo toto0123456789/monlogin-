@@ -112,6 +112,13 @@
     .btn-msg-user:hover{border-color:var(--accent);color:var(--accent);}
     .btn-view-user{flex:1;padding:7px;border:1px solid rgba(100,150,255,0.4);border-radius:8px;background:transparent;color:#6496ff;font-family:'Poppins',sans-serif;font-size:0.7rem;cursor:pointer;transition:all 0.2s;}
     .btn-view-user:hover{background:rgba(100,150,255,0.1);}
+    /* BAN DURATION MODAL */
+    .ban-duration-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:400;align-items:center;justify-content:center;}
+    .ban-duration-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    .ban-duration-modal{background:linear-gradient(145deg,var(--card),var(--card2));border:1px solid rgba(255,60,60,0.3);border-radius:18px;padding:24px;width:300px;animation:slideUp 0.3s ease;}
+    .ban-dur-btn{width:100%;padding:11px;margin-bottom:8px;border:1px solid rgba(255,60,60,0.2);border-radius:10px;background:transparent;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.82rem;cursor:pointer;transition:all 0.2s;text-align:left;display:flex;justify-content:space-between;align-items:center;}
+    .ban-dur-btn:hover{background:rgba(255,60,60,0.1);border-color:rgba(255,60,60,0.5);color:#ff4343;}
+    .ban-dur-badge{font-size:0.65rem;color:var(--muted);background:var(--input-bg);border:1px solid var(--input-border);border-radius:6px;padding:2px 7px;}
     /* MODAL COMPTE USER ADMIN */
     .admin-view-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;}
     .admin-view-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
@@ -546,12 +553,22 @@
  
       <div class="dash-section" id="adminSection">
         <!-- HEADER ADMIN -->
-        <div class="admin-header">
-          <div style="font-size:1.5rem;">👑</div>
+        <div class="admin-header" id="adminPanelHeader">
+          <div style="font-size:1.5rem;" id="adminPanelIcon">👑</div>
           <div>
-            <div style="color:var(--text);font-weight:700;font-size:0.9rem;">Panneau Admin</div>
-            <div style="color:var(--muted);font-size:0.7rem;">Accès restreint</div>
+            <div style="color:var(--text);font-weight:700;font-size:0.9rem;" id="adminPanelTitle">Panneau Créateur</div>
+            <div style="color:var(--muted);font-size:0.7rem;" id="adminPanelSub">Accès restreint</div>
           </div>
+        </div>
+        <!-- GESTION SOUS-ADMINS (admin principal seulement) -->
+        <div class="setting-block" id="subAdminBlock" style="display:none;">
+          <div class="setting-title">🛡️ Modérateurs</div>
+          <div id="subAdminList" style="margin-bottom:10px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="subAdminEmail" placeholder="Email du modérateur..." style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.78rem;outline:none;"/>
+            <button class="btn-save-sm" style="flex-shrink:0;padding:9px 14px;font-size:0.72rem;" onclick="addSubAdmin()">➕</button>
+          </div>
+          <div class="msg" id="subAdminMsg"></div>
         </div>
 
         <!-- STATS GLOBALES -->
@@ -1335,6 +1352,9 @@
   window._setDoc=setDoc;
   const ADMIN_EMAIL="tombrethome007@gmail.com";
   const ADMIN_EMAILS=["tombrethome007@gmail.com"];
+  const MOD_EMAILS=["kyliandaenes@gmail.com","kylian.d.2011@hotmail.com"];
+  let SUB_ADMINS = [];
+  let _currentUserRole = "user";
  
   function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
  
@@ -1458,9 +1478,27 @@
       try{
         const userDoc=await getDoc(doc(db,'users',result.user.uid));
         if(userDoc.exists()&&userDoc.data().banned){
-          await signOut(auth);
-          showMsg('loginMsg','🚫 Ton compte a été banni.','error');
-          return;
+          const data = userDoc.data();
+          if(!data.banPermanent && data.banUntil){
+            const until = new Date(data.banUntil);
+            if(until <= new Date()){
+              // Ban expiré — débannir automatiquement
+              await updateDoc(doc(db,'users',result.user.uid),{banned:false,banUntil:null});
+              // Laisser passer la connexion
+            } else {
+              await signOut(auth);
+              const diff = until - new Date();
+              const mins = Math.ceil(diff/60000);
+              const h = Math.floor(mins/60), m = mins%60;
+              const duree = h>0?(h+'h'+(m>0?m+'min':'')):mins<1?Math.ceil(diff/1000)+'sec':mins+'min';
+              showMsg('loginMsg','🚫 Compte banni encore '+duree+'.','error');
+              return;
+            }
+          } else {
+            await signOut(auth);
+            showMsg('loginMsg','🚫 Ton compte a été banni définitivement.','error');
+            return;
+          }
         }
       }catch(e){}
       document.getElementById('tabsBar').style.display='none';
@@ -1505,8 +1543,12 @@
       _currentUid = result.user.uid;
       window._currentUid = result.user.uid;
       // Afficher onglet admin si c'est l'admin
+      try{const saDoc=await getDoc(doc(db,'config','subAdmins'));if(saDoc.exists())SUB_ADMINS=saDoc.data().emails||[];}catch(e){}
+      if(ADMIN_EMAILS.includes(result.user.email))_currentUserRole='admin';
+      else if(MOD_EMAILS.includes(result.user.email)||SUB_ADMINS.includes(result.user.email))_currentUserRole='subadmin';
+      else _currentUserRole='user';
       const adminNav=document.getElementById('navAdmin');
-      if(adminNav)adminNav.style.display=ADMIN_EMAILS.includes(result.user.email)?'flex':'none';
+      if(adminNav)adminNav.style.display=(_currentUserRole==='admin'||_currentUserRole==='subadmin')?'flex':'none';
       // Historique connexions
       const device=navigator.userAgent.includes('Mobile')?'Mobile':'PC';
       loginHistory.push({date:now,device});
@@ -1631,6 +1673,79 @@
 
   window.loadAdminUsers=function(){
     startAdminListener();
+    setupAdminPanel();
+  }
+
+  // Configure le panel selon le rôle
+  function setupAdminPanel(){
+    const isMain = _currentUserRole==='admin';
+    const isSub = _currentUserRole==='subadmin';
+    // Header
+    const icon=document.getElementById('adminPanelIcon');
+    const title=document.getElementById('adminPanelTitle');
+    const sub=document.getElementById('adminPanelSub');
+    if(isSub){
+      if(icon)icon.textContent='🛡️';
+      if(title)title.textContent='Panel Modérateur';
+      if(sub)sub.textContent='Accès limité';
+    }
+    // Bloc sous-admins visible seulement pour l'admin principal
+    const saBlock=document.getElementById('subAdminBlock');
+    if(saBlock)saBlock.style.display=isMain?'block':'none';
+    if(isMain) renderSubAdminList();
+  }
+
+  // Afficher la liste des sous-admins
+  async function renderSubAdminList(){
+    const el=document.getElementById('subAdminList');
+    if(!el)return;
+    try{
+      const saDoc=await getDoc(doc(db,'config','subAdmins'));
+      const emails=saDoc.exists()?(saDoc.data().emails||[]):[];
+      if(!emails.length){el.innerHTML='<div style="color:var(--muted);font-size:0.75rem;padding:6px 0;">Aucun modérateur</div>';return;}
+      el.innerHTML=emails.map(e=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--input-bg);border:1px solid rgba(100,150,255,0.2);border-radius:10px;padding:8px 12px;margin-bottom:6px;">
+          <span style="color:var(--text);font-size:0.78rem;">🛡️ ${e}</span>
+          <button onclick="removeSubAdmin('${e}')" style="background:transparent;border:none;cursor:pointer;color:#ff4343;font-size:0.8rem;opacity:0.7;">✖</button>
+        </div>`).join('');
+    }catch(err){el.innerHTML='<div style="color:#ff4343;font-size:0.75rem;">Erreur chargement</div>';}
+  }
+
+  // Ajouter un sous-admin
+  window.addSubAdmin=async function(){
+    const email=document.getElementById('subAdminEmail').value.trim();
+    if(!email){showMsg('subAdminMsg','⚠️ Entre un email !','error');return;}
+    // Vérifier que l'utilisateur existe
+    const snap=await getDocs(collection(db,'users'));
+    let found=false;
+    snap.forEach(d=>{if(d.data().email===email)found=true;});
+    if(!found){showMsg('subAdminMsg','❌ Utilisateur introuvable.','error');return;}
+    try{
+      const saRef=doc(db,'config','subAdmins');
+      const saDoc=await getDoc(saRef);
+      const emails=saDoc.exists()?(saDoc.data().emails||[]):[];
+      if(emails.includes(email)){showMsg('subAdminMsg','⚠️ Déjà modérateur.','info');return;}
+      emails.push(email);
+      await setDoc(saRef,{emails});
+      SUB_ADMINS=emails;
+      document.getElementById('subAdminEmail').value='';
+      showMsg('subAdminMsg','✅ Modérateur ajouté !','success');
+      renderSubAdminList();
+    }catch(e){showMsg('subAdminMsg','❌ '+e.message,'error');}
+  }
+
+  // Retirer un sous-admin
+  window.removeSubAdmin=async function(email){
+    if(!confirm('Retirer '+email+' des modérateurs ?'))return;
+    try{
+      const saRef=doc(db,'config','subAdmins');
+      const saDoc=await getDoc(saRef);
+      const emails=(saDoc.data().emails||[]).filter(e=>e!==email);
+      await setDoc(saRef,{emails});
+      SUB_ADMINS=emails;
+      showMsg('subAdminMsg','✅ Modérateur retiré !','success');
+      renderSubAdminList();
+    }catch(e){alert('Erreur: '+e.message);}
   }
 
   window.renderAdminUsers=function(list){
@@ -1644,7 +1759,7 @@
           <div class="admin-user-item" style="border-color:rgba(255,200,0,0.3);background:rgba(255,200,0,0.04);">
             <div class="admin-user-top">
               <div>
-                <div class="admin-user-pseudo">👑 ${u.pseudo||'Admin'} <span style="color:rgba(255,200,0,0.9);font-size:0.6rem;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);border-radius:8px;padding:1px 6px;margin-left:4px;">ADMIN</span></div>
+                <div class="admin-user-pseudo">👑 ${u.pseudo||'Admin'} <span style="color:rgba(255,200,0,0.9);font-size:0.6rem;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);border-radius:8px;padding:1px 6px;margin-left:4px;">CRÉATEUR</span></div>
                 <div class="admin-user-email" style="color:rgba(255,200,0,0.5);">🔒 Administrateur</div>
               </div>
               <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
@@ -1669,8 +1784,8 @@
               :`<button type="button" class="btn-ban" onclick="event.preventDefault();banUser('${u.uid}')">🚫 Bannir</button>`
             }
             <button type="button" class="btn-msg-user" onclick="event.preventDefault();prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
-            <button type="button" class="btn-view-user" onclick="event.preventDefault();event.stopPropagation();viewUserAccount('${u.uid}')">📋 Infos</button>
-            <button type="button" class="btn-delete-user" onclick="event.preventDefault();event.stopPropagation();deleteUserAdmin('${u.uid}','${(u.email||'').replace(/'/g,"\'")}','${(u.ip||'').replace(/\./g,'-')}')">🗑️</button>
+            ${_currentUserRole==='admin'?`<button type="button" class="btn-view-user" onclick="event.preventDefault();event.stopPropagation();viewUserAccount('${u.uid}')">📋 Infos</button>`:''}
+            ${_currentUserRole==='admin'?`<button type="button" class="btn-delete-user" onclick="event.preventDefault();event.stopPropagation();deleteUserAdmin('${u.uid}','${(u.email||'').replace(/'/g,"\'")}','${(u.ip||'').replace(/\./g,'-')}')">🗑️</button>`:''}
           </div>
         </div>`;
     }).join('');
@@ -1683,15 +1798,41 @@
     ));
   }
 
-  window.banUser=async function(uid){
-    if(!confirm('Bannir cet utilisateur ?'))return;
-    try{await updateDoc(doc(db,'users',uid),{banned:true});}
-    catch(e){alert('Erreur: '+e.message);}
+  let banTargetUid = null;
+
+  window.banUser=function(uid){
+    banTargetUid = uid;
+    const u = allAdminUsers.find(x=>x.uid===uid);
+    const el = document.getElementById('banDurationTarget');
+    if(el) el.textContent = u ? (u.pseudo||u.email||'Cet utilisateur') : '';
+    document.getElementById('banDurationOverlay').classList.add('open');
+  }
+
+  window.confirmBan=async function(seconds){
+    document.getElementById('banDurationOverlay').classList.remove('open');
+    if(!banTargetUid) return;
+    const uid = banTargetUid;
+    banTargetUid = null;
+    try{
+      const banData = {banned: true, banReason: 'admin'};
+      if(seconds === -1){
+        // Permanent
+        banData.banUntil = null;
+        banData.banPermanent = true;
+      } else {
+        banData.banUntil = new Date(Date.now() + seconds*1000).toISOString();
+        banData.banPermanent = false;
+        // Le débannissement automatique se fait à la connexion (vérification banUntil)
+      }
+      await updateDoc(doc(db,'users',uid), banData);
+      // Fermer la modal infos si ouverte sur ce user
+      if(adminViewCurrentUid===uid) document.getElementById('adminViewOverlay').classList.remove('open');
+    }catch(e){alert('Erreur: '+e.message);}
   }
 
   window.unbanUser=async function(uid){
     if(!confirm('Débannir ?'))return;
-    try{await updateDoc(doc(db,'users',uid),{banned:false});}
+    try{await updateDoc(doc(db,'users',uid),{banned:false, banUntil:null, banPermanent:false});}
     catch(e){alert('Erreur: '+e.message);}
   }
 
@@ -1857,10 +1998,17 @@
     if(!adminViewCurrentUid) return;
     const u = allAdminUsers.find(x=>x.uid===adminViewCurrentUid);
     if(!u) return;
-    try{
-      await updateDoc(doc(db,'users',adminViewCurrentUid),{banned:!u.banned});
+    if(u.banned){
+      // Débannir directement
+      try{
+        await updateDoc(doc(db,'users',adminViewCurrentUid),{banned:false, banUntil:null, banPermanent:false});
+        document.getElementById('adminViewOverlay').classList.remove('open');
+      }catch(e){alert('Erreur: '+e.message);}
+    } else {
+      // Ouvrir le picker de durée
       document.getElementById('adminViewOverlay').classList.remove('open');
-    }catch(e){alert('Erreur: '+e.message);}
+      window.banUser(adminViewCurrentUid);
+    }
   }
 
   window.logout=async function(){
@@ -1942,6 +2090,25 @@
     <div style="margin-top:8px;">
       <button class="btn-delete-user" style="width:100%;padding:9px;border:1px solid rgba(255,60,60,0.5);border-radius:8px;background:transparent;color:#ff4343;font-family:'Poppins',sans-serif;font-size:0.72rem;cursor:pointer;transition:all 0.2s;letter-spacing:1px;" onclick="deleteUserAdminFromModal()">🗑️ Supprimer cet utilisateur</button>
     </div>
+  </div>
+</div>
+<!-- MODAL DURÉE BAN -->
+<div class="ban-duration-overlay" id="banDurationOverlay">
+  <div class="ban-duration-modal">
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:1.8rem;margin-bottom:6px;">🚫</div>
+      <div style="color:#ff4343;font-size:0.9rem;font-weight:700;">Durée du bannissement</div>
+      <div style="color:var(--muted);font-size:0.72rem;margin-top:4px;" id="banDurationTarget"></div>
+    </div>
+    <button class="ban-dur-btn" onclick="confirmBan(30)"><span>⏱️ 30 secondes</span><span class="ban-dur-badge">test</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(60)"><span>⏱️ 1 minute</span><span class="ban-dur-badge">courte</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(300)"><span>⏱️ 5 minutes</span><span class="ban-dur-badge">courte</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(1800)"><span>⏱️ 30 minutes</span><span class="ban-dur-badge">moyenne</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(3600)"><span>⏱️ 1 heure</span><span class="ban-dur-badge">moyenne</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(86400)"><span>📅 1 jour</span><span class="ban-dur-badge">longue</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(2592000)"><span>📅 1 mois</span><span class="ban-dur-badge">longue</span></button>
+    <button class="ban-dur-btn" onclick="confirmBan(-1)" style="border-color:rgba(255,60,60,0.5);color:#ff4343;"><span>🔴 Permanent</span><span class="ban-dur-badge" style="color:#ff4343;">définitif</span></button>
+    <button class="btn-cancel-sm" style="width:100%;margin-top:4px;" onclick="document.getElementById('banDurationOverlay').classList.remove('open')">Annuler</button>
   </div>
 </div>
 </body>
