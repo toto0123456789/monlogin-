@@ -112,8 +112,6 @@
     .btn-msg-user:hover{border-color:var(--accent);color:var(--accent);}
     .btn-view-user{flex:1;padding:7px;border:1px solid rgba(100,150,255,0.4);border-radius:8px;background:transparent;color:#6496ff;font-family:'Poppins',sans-serif;font-size:0.7rem;cursor:pointer;transition:all 0.2s;}
     .btn-view-user:hover{background:rgba(100,150,255,0.1);}
-    .btn-delete-user{padding:7px 10px;border:1px solid rgba(255,60,60,0.4);border-radius:8px;background:transparent;color:#ff4343;font-family:'Poppins',sans-serif;font-size:0.7rem;cursor:pointer;transition:all 0.2s;}
-    .btn-delete-user:hover{background:rgba(255,60,60,0.15);}
     /* MODAL COMPTE USER ADMIN */
     .admin-view-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;}
     .admin-view-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
@@ -489,7 +487,7 @@
           <div class="home-quick-btn" onclick="switchDash('amis')">👥 Amis<span id="homeCountAmis" style="display:block;color:var(--muted);font-size:0.65rem;margin-top:2px;">0 ami(s)</span></div>
         </div>
       </div>
- 
+
       <div class="dash-section" id="profilSection">
         <div style="text-align:center;padding:10px 0 16px;">
           <div onclick="openAvatarModal()" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 10px;cursor:pointer;box-shadow:0 0 25px rgba(255,77,158,0.4);" id="profilAvatarBig"><span id="profilAvatarContent">👾</span></div>
@@ -507,7 +505,7 @@
         <button class="btn-logout-dash" onclick="switchDash('parametres')" style="margin-bottom:8px;">⚙️ Paramètres</button>
         <button class="btn-logout-dash" onclick="logout()">🚪 Se déconnecter</button>
       </div>
- 
+
       <div class="dash-section" id="jeuxSection">
         <div class="search-wrap">
           <span class="search-icon">🔍</span>
@@ -525,15 +523,23 @@
           <input type="text" id="amiSearchInput" placeholder="Rechercher un ami..." oninput="filterAmis()" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 16px 10px 34px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.8rem;outline:none;transition:all 0.3s;"/>
         </div>
         <div id="amisList"></div>
-        <!-- Formulaire recherche par gamertag -->
         <div class="add-ami-form" id="addAmiForm" style="display:none;">
-          <div class="add-form-title">🔎 Ajouter par Gamertag</div>
-          <div style="display:flex;gap:8px;margin-bottom:10px;">
-            <input type="text" id="amiTagSearch" placeholder="Gamertag de l'ami..." style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.82rem;outline:none;transition:all 0.3s;" oninput="this.style.borderColor=''" onkeydown="if(event.key==='Enter')searchAmiByGamertag()"/>
-            <button class="btn-save-sm" style="flex-shrink:0;padding:10px 14px;" onclick="searchAmiByGamertag()">🔍</button>
+          <div class="add-form-title" id="addAmiTitle">➕ Ajouter un ami</div>
+          <div class="field"><input type="text" id="amiPseudo" placeholder="Pseudo"/></div>
+          <div class="field"><input type="text" id="amiTag" placeholder="Gamertag (ex: Player#1234)"/></div>
+          <div class="field"><input type="text" id="amiJeu" placeholder="Jeu favori (optionnel)"/></div>
+          <div class="field"><input type="text" id="amiEmoji" placeholder="Avatar emoji (ex: 🦊)"/></div>
+          <div class="field">
+            <select id="amiStatut" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.8rem;outline:none;">
+              <option value="offline">⚫ Hors ligne</option>
+              <option value="online">🟢 En ligne</option>
+              <option value="ingame">🟡 En jeu</option>
+            </select>
           </div>
-          <div id="amiSearchResult"></div>
-          <button class="btn-cancel-sm" style="width:100%;margin-top:6px;" onclick="cancelAddAmi()">Annuler</button>
+          <div class="form-btns">
+            <button class="btn-save-sm" onclick="confirmAddAmi()">💾 Sauvegarder</button>
+            <button class="btn-cancel-sm" onclick="cancelAddAmi()">Annuler</button>
+          </div>
         </div>
         <button class="btn-add" id="btnAddAmi" onclick="showAddAmiForm()" style="text-transform:none!important;letter-spacing:0!important;color:var(--accent)!important;">➕ Ajouter un ami</button>
       </div>
@@ -547,7 +553,7 @@
             <div style="color:var(--muted);font-size:0.7rem;">Accès restreint</div>
           </div>
         </div>
- 
+
         <!-- STATS GLOBALES -->
         <div class="setting-block">
           <div class="setting-title">📊 Statistiques globales</div>
@@ -557,7 +563,7 @@
           </div>
           <button class="btn-sm" style="margin-top:10px;" onclick="loadAdminUsers()">🔄 Actualiser</button>
         </div>
- 
+
         <!-- LISTE UTILISATEURS -->
         <div class="setting-block">
           <div class="setting-title">👁️ Utilisateurs inscrits</div>
@@ -566,7 +572,7 @@
           </div>
           <div id="adminUserList"><div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px;">Clique sur Actualiser 👆</div></div>
         </div>
- 
+
         <!-- MESSAGE PRIVÉ -->
         <div class="setting-block">
           <div class="setting-title">💬 Message privé</div>
@@ -576,7 +582,7 @@
           <div class="msg" id="adminMsgStatus"></div>
         </div>
       </div>
- 
+
       <div class="dash-section" id="parametresSection">
  
         <!-- INFOS COMPTE -->
@@ -697,7 +703,7 @@
           </div>
           <div class="msg" id="accentMsg"></div>
         </div>
- 
+
         <!-- LANGUE -->
         <div class="setting-block">
           <div class="setting-title">🌍 Langue</div>
@@ -831,7 +837,7 @@
       return out;
     }catch(e){return str;}
   }
- 
+
   // PROTECTION CODE
   const SECRET='xK9mP2qL7nT4';
   if(new URLSearchParams(window.location.search).get('code')!==SECRET){
@@ -839,7 +845,7 @@
   }
  
   // AVATARS style Netflix
-  const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','❤️','🦄','🤖','👻','💀','🧙','🎁','🗡️','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
+  const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','🦄','🤖','👻','💀','🧙','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
   let selectedAvatar = '👾';
  
   window.openAvatarModal=function() {
@@ -923,8 +929,19 @@
  
   // PSEUDO — géré par Firebase (voir script module)
  
-  // GAMERTAG — uniqueness check handled in Firebase module below
-  // (window.saveGamertag is defined in the module script)
+  // GAMERTAG
+  window.saveGamertag=function(){
+    const val=document.getElementById('setGamertag').value.trim();
+    if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
+    document.getElementById('dashGamertagText').textContent=val;
+    document.getElementById('dashGamertag').style.display='block';
+    document.getElementById('infoGamertag').textContent=val;
+    document.getElementById('setGamertag').value='';
+    // Sauvegarder dans localStorage
+    const email=document.querySelector('#dashEmailText')?.textContent;
+    if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.gamertag=val;localStorage.setItem(key,JSON.stringify(ex));}
+    showMsg('gamertagMsg','✅ Gamertag sauvegardé !','success');
+  }
  
   // NOTIFICATIONS
   // COULEUR ACCENT
@@ -940,7 +957,7 @@
     window.showMsg('accentMsg','✅ Couleur sauvegardée !','success');
     setTimeout(()=>{const m=document.getElementById('accentMsg');if(m)m.style.display='none';},1500);
   }
- 
+
   window.saveProfilPseudo=function(){
     const val=document.getElementById('setPseudo').value.trim();
     if(!val){window.showMsg('profilPseudoMsg','⚠️ Entre un pseudo !','error');return;}
@@ -954,7 +971,7 @@
     if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.pseudo=val;localStorage.setItem(key,JSON.stringify(ex));}
     window.showMsg('profilPseudoMsg','✅ Pseudo sauvegardé !','success');
   }
- 
+
   window.saveNotif=function(){
     showMsg('notifMsg','✅ Préférences sauvegardées !','success');
     setTimeout(()=>{const m=document.getElementById('notifMsg');if(m)m.style.display='none';},2000);
@@ -1023,29 +1040,23 @@
     {icon:'🌍',name:'GTA V',status:'Open World',cat:'Open World'},
     {icon:'🕹️',name:'Roblox',status:'Multijoueur',cat:'Multijoueur'},
     {icon:'🏹',name:'Apex Legends',status:'Battle Royale',cat:'Battle Royale'},
-    {icon:'⚽',name:'FIFA',status:'Sport',cat:'Sport'},
+    {icon:'⚽',name:'FIFA 24',status:'Sport',cat:'Sport'},
     {icon:'🧠',name:'Among Us',status:'Social',cat:'Multijoueur'},
-    {icon:'🚀',name:'Brawl Star',status:'Battle Royale Espace',cat:'Battle Royale'},
+    {icon:'🚀',name:'Starfield',status:'RPG Espace',cat:'RPG'},
     {icon:'🗡️',name:'Elden Ring',status:'Action RPG',cat:'RPG'},
     {icon:'🎲',name:'Overwatch 2',status:'Hero Shooter',cat:'FPS'},
-    {icon:'🌲',name:'Clash Royal',status:'Survie',cat:'Multijoueur'},
-    {icon:'🎸',name:'Tik Tok',status:'Social',cat:'Social'},
-    {icon:'🐺',name:'Discord',status:'Social',cat:'Social'},
-    {icon:'🏔️',name:'Instagrame',status:'Social',cat:'Social'},
+    {icon:'🌲',name:'Rust',status:'Survie',cat:'Survie'},
+    {icon:'🎸',name:'Cyberpunk 2077',status:'Open World RPG',cat:'RPG'},
+    {icon:'🐺',name:'The Witcher 3',status:'RPG',cat:'RPG'},
+    {icon:'🏔️',name:'Hogwarts Legacy',status:'Action RPG',cat:'RPG'},
     {icon:'🎮',name:'Fall Guys',status:'Party Game',cat:'Multijoueur'},
-	{icon:'🏔️',name:'Pokemon Go',status:'Open World',cat:'Open World'},
-	{icon:'🧠️',name:'Manga.ios',status:'Social',cat:'Social'},
-	{icon:'🧠️',name:'Play Station',status:'Social',cat:'Social'},
-	{icon:'🚀️',name:'Netflix',status:'Social',cat:'Social'},
-	{icon:'🚀️',name:'Steam',status:'Social',cat:'Social'},
-	{icon:'🚀️',name:'Musique',status:'Social',cat:'Social'},
   ];
-  const CATS=['Tous','Battle Royale','FPS','RPG','Sport','Survie','MOBA','Open World','Multijoueur','Social'];
+  const CATS=['Tous','Battle Royale','FPS','RPG','Sport','Survie','MOBA','Open World','Multijoueur'];
   let currentCat='Tous';
   let gameSaves={},gameFavs={},currentGame=null,editingId=null;
   let _currentEmail='';
   let _currentUid='';
- 
+
   function saveAllData(){
     if(!_currentEmail)return;
     // Sauvegarder localement
@@ -1114,7 +1125,7 @@
   // NOTES PAR JEU
   let gameNotes={};
   let loginHistory=[];
- 
+
   function updateHomeStats(){
     const saves=countAllSaves();
     const gamesWithSaves=Object.values(gameSaves).filter(s=>s.length>0).length;
@@ -1130,7 +1141,7 @@
     const jc=document.getElementById('homeCountJeux');if(jc)jc.textContent=saves+' sauvegarde(s)';
     const ac=document.getElementById('homeCountAmis');if(ac)ac.textContent=amisList.length+' ami(s)';
   }
- 
+
   function renderLoginHistory(){
     const el=document.getElementById('loginHistory');if(!el)return;
     if(!loginHistory.length){el.innerHTML='<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:10px 0;">Aucun historique</div>';return;}
@@ -1273,40 +1284,20 @@
         </div>
       </div>`).join('');
   }
-  window.showAddAmiForm=function(){
-    document.getElementById('addAmiForm').classList.add('open');
-    document.getElementById('btnAddAmi').style.display='none';
-    document.getElementById('amiTagSearch').value='';
-    document.getElementById('amiSearchResult').innerHTML='';
-    setTimeout(()=>document.getElementById('amiTagSearch').focus(),80);
+  window.showAddAmiForm=function(){editingAmiId=null;['amiPseudo','amiTag','amiJeu','amiEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  window.cancelAddAmi=function(){editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';}
+  window.confirmAddAmi=function(){
+    const pseudo=document.getElementById('amiPseudo').value.trim();
+    const tag=document.getElementById('amiTag').value.trim();
+    const jeu=document.getElementById('amiJeu').value.trim();
+    const emoji=document.getElementById('amiEmoji').value.trim()||'👾';
+    if(!pseudo||!tag){alert('⚠️ Pseudo et Gamertag requis !');return;}
+    const statut=document.getElementById('amiStatut')?document.getElementById('amiStatut').value:'offline';
+    if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1){const fav=amisList[idx].favori||false;amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji,statut,favori:fav};}}
+    else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji,statut,favori:false});
+    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();
   }
-  window.cancelAddAmi=function(){
-    document.getElementById('addAmiForm').classList.remove('open');
-    document.getElementById('btnAddAmi').style.display='block';
-    document.getElementById('amiSearchResult').innerHTML='';
-  }
-  window.editAmi=function(id){
-    const a=amisList.find(x=>x.id===id);
-    if(!a)return;
-    // Afficher un mini formulaire d'édition inline
-    const item=document.querySelector('[data-ami-id="'+id+'"]');
-    // On réutilise la modale de recherche pour l'édition
-    editingAmiId=id;
-    document.getElementById('addAmiForm').classList.add('open');
-    document.getElementById('btnAddAmi').style.display='none';
-    document.getElementById('amiTagSearch').value=a.tag||'';
-    document.getElementById('amiSearchResult').innerHTML=`
-      <div style="background:var(--input-bg);border:1px solid rgba(0,255,100,0.3);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="font-size:1.6rem;">${a.emoji||'👾'}</div>
-          <div>
-            <div style="color:var(--text);font-size:0.85rem;font-weight:600;">${a.pseudo}</div>
-            <div style="color:var(--accent);font-size:0.72rem;">🎮 ${a.tag}</div>
-          </div>
-        </div>
-        <button class="btn-save-sm" style="padding:7px 12px;font-size:0.72rem;" onclick="confirmEditAmi('${id}')">✏️ Modifier</button>
-      </div>`;
-  }
+  window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';if(document.getElementById('amiStatut'))document.getElementById('amiStatut').value=a.statut||'offline';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
   window.deleteAmi=function(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
  
   // AMIS FONCTIONS MANQUANTES
@@ -1325,7 +1316,7 @@
     if(a){a.favori=!a.favori;saveAllData();}
     renderAmis();
   }
- 
+
   window.addEventListener('load',()=>{renderGames(GAMES);renderAmis();renderCats();});
 </script>
  
@@ -1343,7 +1334,7 @@
   window._updateDoc=updateDoc;
   window._setDoc=setDoc;
   const ADMIN_EMAIL="tombrethome007@gmail.com";
-  const ADMIN_EMAILS=["tombrethome007@gmail.com","kylian.d.2011@hotmail.com"];
+  const ADMIN_EMAILS=["tombrethome007@gmail.com"];
  
   function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg '+type;el.style.display='block';}
  
@@ -1439,15 +1430,6 @@
     }
   }
  
-  // === HELPER : récupérer l'IP publique ===
-  async function getPublicIP(){
-    try{
-      const r=await fetch('https://api.ipify.org?format=json');
-      const d=await r.json();
-      return d.ip||null;
-    }catch(e){return null;}
-  }
- 
   window.register=async function(){
     const email=document.getElementById('regEmail').value.trim();
     const pseudo=document.getElementById('regPseudo').value.trim()||'Joueur';
@@ -1456,48 +1438,10 @@
     if(!email||!pass||!conf){showMsg('registerMsg','⚠️ Remplis tous les champs !','error');return;}
     if(pass.length<6){showMsg('registerMsg','⚠️ Min 6 caractères.','error');return;}
     if(pass!==conf){showMsg('registerMsg','❌ Mots de passe différents.','error');return;}
- 
-    // 🧠 BLOCAGE MULTI-COMPTES PAR IP
-    showMsg('registerMsg','🔍 Vérification en cours...','info');
-    const userIP = await getPublicIP();
-    if(userIP){
-      try{
-        const ipRef = doc(db,'registeredIPs',userIP.replace(/\./g,'-'));
-        const ipSnap = await getDoc(ipRef);
-        if(ipSnap.exists()){
-          showMsg('registerMsg','🚫 Un compte existe déjà depuis cette adresse IP.','error');
-          return;
-        }
-      }catch(e){ console.warn('IP check error:',e); /* on laisse passer si erreur réseau */ }
-    }
- 
     try{
-      const cred=await createUserWithEmailAndPassword(auth,email,pass);
+      await createUserWithEmailAndPassword(auth,email,pass);
       // Sauvegarder pseudo dans localStorage
       localStorage.setItem('profile_'+email, JSON.stringify({pseudo, avatar:'👾'}));
-      // Enregistrer l'IP dans Firestore pour bloquer les multi-comptes
-      if(userIP){
-        try{
-          await setDoc(doc(db,'registeredIPs',userIP.replace(/\./g,'-')),{
-            ip: userIP,
-            uid: cred.user.uid,
-            email: email,
-            createdAt: new Date().toISOString()
-          });
-        }catch(e){ console.warn('IP save error:',e); }
-      }
-      // Créer le doc utilisateur dans Firestore
-      try{
-        await setDoc(doc(db,'users',cred.user.uid),{
-          uid: cred.user.uid,
-          email: email,
-          pseudo: pseudo,
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toLocaleString('fr-FR'),
-          banned: false,
-          ip: userIP||'unknown'
-        });
-      }catch(e){ console.warn('User doc error:',e); }
       showMsg('registerMsg','✅ Compte créé !','success');
       ['regEmail','regPseudo','regPass','regPassConfirm'].forEach(id=>document.getElementById(id).value='');
       setTimeout(()=>window.switchTab('login'),1500);
@@ -1515,7 +1459,7 @@
         const userDoc=await getDoc(doc(db,'users',result.user.uid));
         if(userDoc.exists()&&userDoc.data().banned){
           await signOut(auth);
-          showMsg('loginMsg','🚫 Nique ta mére fis de pute.','error');
+          showMsg('loginMsg','🚫 Ton compte a été banni.','error');
           return;
         }
       }catch(e){}
@@ -1587,128 +1531,12 @@
     showMsg('pseudoMsg','✅ Pseudo sauvegardé !','success');
   }
  
-  // 🎮 GAMERTAG UNIQUE — vérifie dans Firestore avant de sauvegarder
-  window.saveGamertag=async function(){
-    const val=document.getElementById('setGamertag').value.trim();
-    if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
-    // Format minimal : contient au moins un #
-    if(!val.includes('#')){showMsg('gamertagMsg','⚠️ Format requis : Pseudo#1234','error');return;}
-    const uid=auth.currentUser?.uid;
-    if(!uid){showMsg('gamertagMsg','❌ Non connecté.','error');return;}
- 
-    showMsg('gamertagMsg','🔍 Vérification...','info');
-    // Chercher si ce gamertag existe déjà chez un autre utilisateur
-    try{
-      const gSnap=await getDocs(collection(db,'users'));
-      let takenBy=null;
-      gSnap.forEach(d=>{
-        if(d.id!==uid && (d.data().gamertag||'').toLowerCase()===val.toLowerCase()){
-          takenBy=d.data().pseudo||d.data().email||'quelqu\'un';
-        }
-      });
-      if(takenBy){
-        showMsg('gamertagMsg','❌ Ce gamertag est déjà pris !','error');
-        return;
-      }
-      // Sauvegarder dans Firestore
-      await updateDoc(doc(db,'users',uid),{gamertag:val});
-      // Sauvegarder dans localStorage
-      const email=auth.currentUser.email;
-      if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.gamertag=val;localStorage.setItem(key,JSON.stringify(ex));}
-      // Mettre à jour l'UI
-      document.getElementById('dashGamertagText').textContent=val;
-      document.getElementById('dashGamertag').style.display='block';
-      document.getElementById('infoGamertag').textContent=val;
-      const hgt=document.getElementById('homeGamertagText');if(hgt)hgt.textContent=val;
-      const hg=document.getElementById('homeGamertag');if(hg)hg.style.display='block';
-      document.getElementById('setGamertag').value='';
-      showMsg('gamertagMsg','✅ Gamertag sauvegardé !','success');
-    }catch(e){showMsg('gamertagMsg','❌ '+e.message,'error');}
-  }
- 
   // Avatar sauvegardé via localStorage
   window.pickAvatarAndSave=function(emoji){
     selectedAvatar=emoji;
     document.getElementById('dashAvatarContent').textContent=emoji;
     document.getElementById('avatarOverlay').classList.remove('open');
     saveProfile('avatar', emoji);
-  }
- 
-  // 🔎 RECHERCHE AMI PAR GAMERTAG
-  window.searchAmiByGamertag=async function(){
-    const tag=document.getElementById('amiTagSearch').value.trim();
-    const resultEl=document.getElementById('amiSearchResult');
-    if(!tag){
-      resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:8px;">⚠️ Entre un gamertag !</div>';
-      return;
-    }
-    resultEl.innerHTML='<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:8px;">⏳ Recherche...</div>';
-    try{
-      const snap=await getDocs(collection(db,'users'));
-      let found=null;
-      const myUid=auth.currentUser?.uid;
-      snap.forEach(d=>{
-        if(d.id===myUid)return; // ne pas s'ajouter soi-même
-        if((d.data().gamertag||'').toLowerCase()===tag.toLowerCase()){
-          found={uid:d.id,...d.data()};
-        }
-      });
-      if(!found){
-        resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:10px;">❌ Aucun utilisateur avec ce gamertag.</div>';
-        document.getElementById('amiTagSearch').style.borderColor='rgba(255,60,60,0.5)';
-        return;
-      }
-      // Vérifier si déjà ami
-      const alreadyFriend=amisList.some(a=>a.uid===found.uid||a.tag?.toLowerCase()===tag.toLowerCase());
-      if(alreadyFriend){
-        resultEl.innerHTML='<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:10px;">👥 Cet utilisateur est déjà dans ta liste.</div>';
-        return;
-      }
-      // Afficher la carte du profil trouvé
-      resultEl.innerHTML=`
-        <div style="background:var(--input-bg);border:1px solid rgba(0,255,100,0.3);border-radius:12px;padding:12px;animation:fadeIn 0.3s ease;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div style="font-size:1.8rem;">${found.avatar||'👾'}</div>
-              <div>
-                <div style="color:var(--text);font-size:0.88rem;font-weight:700;">${found.pseudo||'Joueur'}</div>
-                <div style="color:var(--accent);font-size:0.72rem;margin-top:2px;">🎮 ${found.gamertag}</div>
-                ${found.banned?'<div style="color:#ff4343;font-size:0.65rem;">🚫 Banni</div>':'<div style="color:#00ff64;font-size:0.65rem;">✅ Actif</div>'}
-              </div>
-            </div>
-            <button class="btn-save-sm" style="flex-shrink:0;padding:8px 14px;font-size:0.72rem;" onclick="confirmAddAmiFromSearch('${found.uid}','${(found.pseudo||'Joueur').replace(/'/g,"\\'")}','${found.gamertag.replace(/'/g,"\\'")}','${found.avatar||'👾'}')">➕ Ajouter</button>
-          </div>
-        </div>`;
-    }catch(e){
-      resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:8px;">❌ Erreur: '+e.message+'</div>';
-    }
-  }
- 
-  // Confirmer l'ajout depuis la recherche
-  window.confirmAddAmiFromSearch=function(uid,pseudo,tag,emoji){
-    amisList.push({id:Date.now().toString(),uid,pseudo,tag,emoji,statut:'offline',favori:false});
-    document.getElementById('addAmiForm').classList.remove('open');
-    document.getElementById('btnAddAmi').style.display='block';
-    document.getElementById('amiSearchResult').innerHTML='';
-    document.getElementById('amiTagSearch').value='';
-    renderAmis();
-    saveAllData();
-    // Toast
-    const toast=document.createElement('div');
-    toast.textContent='✅ '+pseudo+' ajouté !';
-    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:999;';
-    document.body.appendChild(toast);
-    setTimeout(()=>toast.remove(),2000);
-  }
- 
-  // Modifier un ami existant
-  window.confirmEditAmi=function(id){
-    const a=amisList.find(x=>x.id===id);
-    if(!a)return;
-    // Rien à modifier ici, juste fermer
-    editingAmiId=null;
-    document.getElementById('addAmiForm').classList.remove('open');
-    document.getElementById('btnAddAmi').style.display='block';
   }
  
   window.forgotPassword=async function(){
@@ -1758,7 +1586,7 @@
   // ===== ADMIN =====
   let allAdminUsers = [];
   let adminUnsubscribe = null;
- 
+
   // Popup message admin reçu
   window.showAdminMessage=function(text){
     const overlay=document.createElement('div');
@@ -1771,7 +1599,7 @@
     </div>`;
     document.body.appendChild(overlay);
   }
- 
+
   // Démarrer l'écoute temps réel des users (admin)
   function startAdminListener(){
     if(adminUnsubscribe)adminUnsubscribe(); // stopper l'ancien listener
@@ -1785,7 +1613,7 @@
       else window.renderAdminUsers(allAdminUsers);
     }, err=>console.error('Admin listener:', err));
   }
- 
+
   // Écoute temps réel des messages non lus
   function startMessagesListener(uid, email){
     onSnapshot(collection(db,'messages'), snap=>{
@@ -1800,81 +1628,73 @@
       });
     });
   }
- 
+
   window.loadAdminUsers=function(){
     startAdminListener();
   }
- 
+
   window.renderAdminUsers=function(list){
     const el=document.getElementById('adminUserList');
     if(!el)return;
     if(!list.length){el.innerHTML='<div style="color:var(--muted);font-size:0.78rem;text-align:center;padding:16px;">Aucun utilisateur trouvé</div>';return;}
-    el.innerHTML=list.filter(u=>!ADMIN_EMAILS.includes(u.email)).map(u=>`
-      <div class="admin-user-item ${u.banned?'banned':''}">
-        <div class="admin-user-top">
-          <div>
-            <div class="admin-user-pseudo">${u.banned?'🚫 ':''}${u.pseudo||'Joueur'}</div>
-            <div class="admin-user-email">${u.email||'—'}</div>
+    el.innerHTML=list.map(u=>{
+      const isAdmin = ADMIN_EMAILS.includes(u.email);
+      if(isAdmin){
+        return `
+          <div class="admin-user-item" style="border-color:rgba(255,200,0,0.3);background:rgba(255,200,0,0.04);">
+            <div class="admin-user-top">
+              <div>
+                <div class="admin-user-pseudo">👑 ${u.pseudo||'Admin'} <span style="color:rgba(255,200,0,0.9);font-size:0.6rem;background:rgba(255,200,0,0.12);border:1px solid rgba(255,200,0,0.3);border-radius:8px;padding:1px 6px;margin-left:4px;">ADMIN</span></div>
+                <div class="admin-user-email" style="color:rgba(255,200,0,0.5);">🔒 Administrateur</div>
+              </div>
+              <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
+            </div>
+            <div class="admin-user-actions">
+              <button type="button" class="btn-msg-user" onclick="event.preventDefault();prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="admin-user-item ${u.banned?'banned':''}">
+          <div class="admin-user-top">
+            <div>
+              <div class="admin-user-pseudo">${u.banned?'🚫 ':''}${u.pseudo||'Joueur'}</div>
+              <div class="admin-user-email">${u.email||'—'}</div>
+            </div>
+            <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
           </div>
-          <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
-        </div>
-        <div class="admin-user-actions">
-          ${u.banned
-            ?`<button type="button" class="btn-unban" onclick="event.preventDefault();unbanUser('${u.uid}')">✅ Débannir</button>`
-            :`<button type="button" class="btn-ban" onclick="event.preventDefault();banUser('${u.uid}')">🚫 Bannir</button>`
-          }
-          <button type="button" class="btn-msg-user" onclick="event.preventDefault();prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
-          <button type="button" class="btn-view-user" onclick="event.preventDefault();event.stopPropagation();viewUserAccount('${u.uid}')">👁️ Voir</button>
-          <button type="button" class="btn-delete-user" onclick="event.preventDefault();event.stopPropagation();deleteUserAdmin('${u.uid}','${(u.email||'').replace(/'/g,"\\'")}','${(u.ip||'').replace(/\./g,'-')}')">🗑️</button>
-        </div>
-      </div>`).join('');
+          <div class="admin-user-actions">
+            ${u.banned
+              ?`<button type="button" class="btn-unban" onclick="event.preventDefault();unbanUser('${u.uid}')">✅ Débannir</button>`
+              :`<button type="button" class="btn-ban" onclick="event.preventDefault();banUser('${u.uid}')">🚫 Bannir</button>`
+            }
+            <button type="button" class="btn-msg-user" onclick="event.preventDefault();prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
+            <button type="button" class="btn-view-user" onclick="event.preventDefault();event.stopPropagation();viewUserAccount('${u.uid}')">📋 Infos</button>
+            <button type="button" class="btn-delete-user" onclick="event.preventDefault();event.stopPropagation();deleteUserAdmin('${u.uid}','${(u.email||'').replace(/'/g,"\'")}','${(u.ip||'').replace(/\./g,'-')}')">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
   }
- 
+
   window.filterAdminUsers=function(){
     const q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
     window.renderAdminUsers(allAdminUsers.filter(u=>
       (u.pseudo||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)
     ));
   }
- 
+
   window.banUser=async function(uid){
     if(!confirm('Bannir cet utilisateur ?'))return;
     try{await updateDoc(doc(db,'users',uid),{banned:true});}
     catch(e){alert('Erreur: '+e.message);}
   }
- 
+
   window.unbanUser=async function(uid){
     if(!confirm('Débannir ?'))return;
     try{await updateDoc(doc(db,'users',uid),{banned:false});}
     catch(e){alert('Erreur: '+e.message);}
   }
- 
-  // 🗑️ SUPPRIMER UN UTILISATEUR (Firestore + IP enregistrée + localStorage)
-  window.deleteUserAdmin=async function(uid, email, ipKey){
-    if(!confirm(`⚠️ Supprimer définitivement l'utilisateur "${email}" ?\n\nCela supprimera :\n• Son document Firestore\n• Ses données de sauvegarde\n• L'enregistrement IP`))return;
-    try{
-      // Supprimer le doc utilisateur (contient gameSaves, gameFavs etc.)
-      await deleteDoc(doc(db,'users',uid));
-      // Supprimer l'IP associée pour permettre une nouvelle inscription
-      if(ipKey){
-        try{ await deleteDoc(doc(db,'registeredIPs',ipKey)); }catch(e){}
-      }
-      // Supprimer les messages envoyés à cet utilisateur
-      try{
-        const msgsSnap = await getDocs(collection(db,'messages'));
-        const delPromises=[];
-        msgsSnap.forEach(d=>{ if(d.data().to===uid||d.data().to===email) delPromises.push(deleteDoc(doc(db,'messages',d.id))); });
-        await Promise.all(delPromises);
-      }catch(e){}
-      // Fermer la modal si ouverte sur ce user
-      if(adminViewCurrentUid===uid){
-        document.getElementById('adminViewOverlay').classList.remove('open');
-        adminViewCurrentUid=null;
-      }
-      alert('✅ Utilisateur supprimé avec succès.');
-    }catch(e){alert('❌ Erreur: '+e.message);}
-  }
- 
+
   window.prefillMsg=function(uid, name){
     switchDash('admin');
     setTimeout(()=>{
@@ -1882,7 +1702,7 @@
       document.getElementById('adminMsgText').focus();
     },100);
   }
- 
+
   window.sendAdminMsg=async function(){
     const target=document.getElementById('adminMsgTarget').value.trim();
     const text=document.getElementById('adminMsgText').value.trim();
@@ -1897,37 +1717,81 @@
       document.getElementById('adminMsgTarget').value='';
     }catch(e){showMsg('adminMsgStatus','❌ '+e.message,'error');}
   }
- 
- 
+
+
   let adminViewCurrentUid = null;
- 
+
+  // Helper copier
+  window.showCopied=function(){
+    const t=document.getElementById('copiedToast');
+    if(t){t.style.display='block';setTimeout(()=>t.style.display='none',1800);}
+  }
+
+  // Toggle mot de passe connexion
+  window.toggleAdminLoginPass=function(){
+    const span=document.getElementById('adminViewLoginPass');
+    const btn=document.getElementById('adminViewPassEye');
+    const hidden=span.dataset.hidden==='true';
+    span.textContent=hidden?span.dataset.pass:'•'.repeat((span.dataset.pass||'').length||6);
+    span.dataset.hidden=hidden?'false':'true';
+    btn.style.opacity=hidden?'1':'0.5';
+  }
+
   window.viewUserAccount=async function(uid){
     adminViewCurrentUid = uid;
     const u = allAdminUsers.find(x=>x.uid===uid);
     if(!u) return;
- 
-    // Remplir les infos
+
+    // En-tête
     document.getElementById('adminViewAvatar').textContent = u.avatar||'👾';
     document.getElementById('adminViewPseudo').textContent = u.pseudo||'Joueur';
     document.getElementById('adminViewEmail').textContent = u.email||'—';
+
+    // 🔑 Connexion au site
+    const loginEmailEl = document.getElementById('adminViewLoginEmail');
+    if(loginEmailEl) loginEmailEl.textContent = u.email||'—';
+
+    // Mot de passe — on essaie de le récupérer depuis Firestore (champ encryptedPass si stocké)
+    const passEl = document.getElementById('adminViewLoginPass');
+    if(passEl){
+      // On affiche "Non disponible" par défaut — Firebase ne stocke pas les mdp en clair
+      passEl.textContent = '🔒 Non accessible';
+      passEl.dataset.pass = '🔒 Non accessible';
+      passEl.dataset.hidden = 'false';
+      // Si l'admin a stocké un mdp chiffré dans Firestore
+      if(u.encryptedPass){
+        const decrypted = decrypt(u.encryptedPass);
+        passEl.dataset.pass = decrypted;
+        passEl.textContent = '•'.repeat(decrypted.length);
+        passEl.dataset.hidden = 'true';
+      }
+    }
+
+    // IP
+    const ipEl = document.getElementById('adminViewIP');
+    if(ipEl) ipEl.textContent = u.ip||'—';
+
+    // Infos compte
     document.getElementById('adminViewUid').textContent = u.uid;
+    const pseudoInfoEl = document.getElementById('adminViewPseudoInfo');
+    if(pseudoInfoEl) pseudoInfoEl.textContent = u.pseudo||'Joueur';
+    const gtagInfoEl = document.getElementById('adminViewGamertagInfo');
+    if(gtagInfoEl) gtagInfoEl.textContent = u.gamertag||'—';
     document.getElementById('adminViewDate').textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('fr-FR') : '—';
     document.getElementById('adminViewLastLogin').textContent = u.lastLogin||'—';
     document.getElementById('adminViewStatus').innerHTML = u.banned
       ? '<span style="color:#ff4343">🚫 Banni</span>'
       : '<span style="color:#00ff64">✅ Actif</span>';
-    const ipEl = document.getElementById('adminViewIP');
-    if(ipEl) ipEl.textContent = u.ip||'—';
- 
+
     const gt = document.getElementById('adminViewGamertag');
     if(u.gamertag){gt.textContent='🎮 '+u.gamertag;gt.style.display='block';}
     else gt.style.display='none';
- 
+
     // Bouton ban/unban
     const banBtn = document.getElementById('adminViewBanBtn');
     banBtn.textContent = u.banned ? '✅ Débannir' : '🚫 Bannir';
     banBtn.className = u.banned ? 'btn-unban' : 'btn-ban';
- 
+
     // Charger les sauvegardes depuis Firestore
     const savesEl = document.getElementById('adminViewSaves');
     savesEl.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:8px;">⏳ Chargement...</div>';
@@ -1969,10 +1833,10 @@
       savesEl.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:8px;">❌ Erreur de chargement</div>';
       console.error(e);
     }
- 
+
     document.getElementById('adminViewOverlay').classList.add('open');
   }
- 
+
   window.toggleAdminSave=function(el){
     const details = el.querySelector('.admin-save-details');
     const arrow = el.querySelector('span:last-child');
@@ -1980,7 +1844,7 @@
     details.style.display = isOpen ? 'none' : 'block';
     arrow.textContent = isOpen ? '▼' : '▲';
   }
- 
+
   window.toggleAdminPass=function(btn){
     const span = btn.previousElementSibling;
     const hidden = span.dataset.hidden === 'true';
@@ -1988,7 +1852,7 @@
     span.dataset.hidden = hidden ? 'false' : 'true';
     btn.style.opacity = hidden ? '1' : '0.5';
   }
- 
+
   window.adminToggleBan=async function(){
     if(!adminViewCurrentUid) return;
     const u = allAdminUsers.find(x=>x.uid===adminViewCurrentUid);
@@ -1998,16 +1862,7 @@
       document.getElementById('adminViewOverlay').classList.remove('open');
     }catch(e){alert('Erreur: '+e.message);}
   }
- 
-  // Supprimer depuis la modal de détail
-  window.deleteUserAdminFromModal=async function(){
-    if(!adminViewCurrentUid) return;
-    const u = allAdminUsers.find(x=>x.uid===adminViewCurrentUid);
-    if(!u) return;
-    const ipKey = u.ip ? u.ip.replace(/\./g,'-') : null;
-    await window.deleteUserAdmin(adminViewCurrentUid, u.email||'', ipKey||'');
-  }
- 
+
   window.logout=async function(){
     await signOut(auth);
     document.getElementById('dashboard').style.display='none';
@@ -2020,16 +1875,17 @@
   </div>
 </div>
  
- 
+
 <script>
   const _p=document.getElementById("particles");
   if(_p){for(let i=0;i<35;i++){const p=document.createElement("div");p.className="particle";p.style.left=Math.random()*100+"%";p.style.animationDuration=(7+Math.random()*10)+"s";p.style.animationDelay=(Math.random()*10)+"s";p.style.width=p.style.height=(1+Math.random()*2)+"px";p.style.opacity=Math.random()*0.3;_p.appendChild(p);}}
 </script>
 <div id="copiedToast" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:9px 20px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(255,77,158,0.4);">📋 Copié !</div>
- 
-<!-- MODAL VOIR COMPTE ADMIN -->
+
+<!-- MODAL INFOS COMPTE ADMIN -->
 <div class="admin-view-overlay" id="adminViewOverlay">
   <div class="admin-view-modal">
+    <!-- EN-TÊTE -->
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
       <div style="font-size:2rem;" id="adminViewAvatar">👾</div>
       <div>
@@ -2038,16 +1894,47 @@
         <div style="color:var(--accent);font-size:0.68rem;margin-top:2px;" id="adminViewGamertag"></div>
       </div>
     </div>
-    <div class="admin-view-title">📋 Infos</div>
+
+    <!-- CONNEXION AU SITE -->
+    <div class="admin-view-title">🔑 Connexion au site</div>
+    <div class="admin-view-info">
+      <div class="info-row">
+        <span class="info-key">Email</span>
+        <span class="info-val" style="display:flex;align-items:center;gap:6px;">
+          <span id="adminViewLoginEmail">—</span>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('adminViewLoginEmail').textContent);showCopied()" style="background:transparent;border:none;cursor:pointer;font-size:0.8rem;opacity:0.5;">📋</button>
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Mot de passe</span>
+        <span class="info-val" style="display:flex;align-items:center;gap:6px;">
+          <span id="adminViewLoginPass" data-pass="" data-hidden="true">——</span>
+          <button onclick="toggleAdminLoginPass()" style="background:transparent;border:none;cursor:pointer;font-size:0.85rem;opacity:0.5;" id="adminViewPassEye">👁️</button>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('adminViewLoginPass').dataset.pass);showCopied()" style="background:transparent;border:none;cursor:pointer;font-size:0.8rem;opacity:0.5;">📋</button>
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Adresse IP</span>
+        <span class="info-val" id="adminViewIP" style="font-size:0.7rem;">—</span>
+      </div>
+    </div>
+
+    <!-- INFOS COMPTE -->
+    <div class="admin-view-title">📋 Infos du compte</div>
     <div class="admin-view-info">
       <div class="info-row"><span class="info-key">UID</span><span class="info-val" id="adminViewUid" style="font-size:0.6rem;word-break:break-all;">—</span></div>
+      <div class="info-row"><span class="info-key">Pseudo</span><span class="info-val" id="adminViewPseudoInfo">—</span></div>
+      <div class="info-row"><span class="info-key">Gamertag</span><span class="info-val" id="adminViewGamertagInfo">—</span></div>
       <div class="info-row"><span class="info-key">Membre depuis</span><span class="info-val" id="adminViewDate">—</span></div>
       <div class="info-row"><span class="info-key">Dernière co.</span><span class="info-val" id="adminViewLastLogin">—</span></div>
       <div class="info-row"><span class="info-key">Statut</span><span class="info-val" id="adminViewStatus">—</span></div>
-      <div class="info-row"><span class="info-key">Adresse IP</span><span class="info-val" id="adminViewIP" style="font-size:0.7rem;">—</span></div>
     </div>
-    <div class="admin-view-title">🎮 Sauvegardes</div>
+
+    <!-- SAUVEGARDES JEUX -->
+    <div class="admin-view-title">🎮 Sauvegardes jeux</div>
     <div id="adminViewSaves" class="admin-view-info" style="color:var(--muted);font-size:0.75rem;">Chargement...</div>
+
+    <!-- BOUTONS -->
     <div style="display:flex;gap:8px;margin-top:14px;">
       <button class="btn-ban" id="adminViewBanBtn" onclick="adminToggleBan()" style="flex:1">🚫 Bannir</button>
       <button class="btn-cancel-sm" onclick="document.getElementById('adminViewOverlay').classList.remove('open')" style="flex:1">Fermer</button>
