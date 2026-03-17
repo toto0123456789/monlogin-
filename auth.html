@@ -531,22 +531,13 @@
         </div>
         <div id="amisList"></div>
         <div class="add-ami-form" id="addAmiForm" style="display:none;">
-          <div class="add-form-title" id="addAmiTitle">➕ Ajouter un ami</div>
-          <div class="field"><input type="text" id="amiPseudo" placeholder="Pseudo"/></div>
-          <div class="field"><input type="text" id="amiTag" placeholder="Gamertag (ex: Player#1234)"/></div>
-          <div class="field"><input type="text" id="amiJeu" placeholder="Jeu favori (optionnel)"/></div>
-          <div class="field"><input type="text" id="amiEmoji" placeholder="Avatar emoji (ex: 🦊)"/></div>
-          <div class="field">
-            <select id="amiStatut" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.8rem;outline:none;">
-              <option value="offline">⚫ Hors ligne</option>
-              <option value="online">🟢 En ligne</option>
-              <option value="ingame">🟡 En jeu</option>
-            </select>
+          <div class="add-form-title">🔎 Ajouter par Gamertag</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <input type="text" id="amiTagSearch" placeholder="Gamertag de l'ami..." style="flex:1;background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Poppins',sans-serif;font-size:0.82rem;outline:none;transition:all 0.3s;" oninput="this.style.borderColor=''" onkeydown="if(event.key==='Enter')searchAmiByGamertag()"/>
+            <button class="btn-save-sm" style="flex-shrink:0;padding:10px 14px;" onclick="searchAmiByGamertag()">🔍</button>
           </div>
-          <div class="form-btns">
-            <button class="btn-save-sm" onclick="confirmAddAmi()">💾 Sauvegarder</button>
-            <button class="btn-cancel-sm" onclick="cancelAddAmi()">Annuler</button>
-          </div>
+          <div id="amiSearchResult"></div>
+          <button class="btn-cancel-sm" style="width:100%;margin-top:6px;" onclick="cancelAddAmi()">Annuler</button>
         </div>
         <button class="btn-add" id="btnAddAmi" onclick="showAddAmiForm()" style="text-transform:none!important;letter-spacing:0!important;color:var(--accent)!important;">➕ Ajouter un ami</button>
       </div>
@@ -937,19 +928,7 @@
  
   // PSEUDO — géré par Firebase (voir script module)
  
-  // GAMERTAG
-  window.saveGamertag=function(){
-    const val=document.getElementById('setGamertag').value.trim();
-    if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
-    document.getElementById('dashGamertagText').textContent=val;
-    document.getElementById('dashGamertag').style.display='block';
-    document.getElementById('infoGamertag').textContent=val;
-    document.getElementById('setGamertag').value='';
-    // Sauvegarder dans localStorage
-    const email=document.querySelector('#dashEmailText')?.textContent;
-    if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.gamertag=val;localStorage.setItem(key,JSON.stringify(ex));}
-    showMsg('gamertagMsg','✅ Gamertag sauvegardé !','success');
-  }
+  // GAMERTAG — géré dans le module Firebase (saveGamertag async défini plus bas)
  
   // NOTIFICATIONS
   // COULEUR ACCENT
@@ -1292,20 +1271,38 @@
         </div>
       </div>`).join('');
   }
-  window.showAddAmiForm=function(){editingAmiId=null;['amiPseudo','amiTag','amiJeu','amiEmoji'].forEach(id=>document.getElementById(id).value='');document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
-  window.cancelAddAmi=function(){editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';}
-  window.confirmAddAmi=function(){
-    const pseudo=document.getElementById('amiPseudo').value.trim();
-    const tag=document.getElementById('amiTag').value.trim();
-    const jeu=document.getElementById('amiJeu').value.trim();
-    const emoji=document.getElementById('amiEmoji').value.trim()||'👾';
-    if(!pseudo||!tag){alert('⚠️ Pseudo et Gamertag requis !');return;}
-    const statut=document.getElementById('amiStatut')?document.getElementById('amiStatut').value:'offline';
-    if(editingAmiId){const idx=amisList.findIndex(a=>a.id===editingAmiId);if(idx!==-1){const fav=amisList[idx].favori||false;amisList[idx]={id:editingAmiId,pseudo,tag,jeu,emoji,statut,favori:fav};}}
-    else amisList.push({id:Date.now().toString(),pseudo,tag,jeu,emoji,statut,favori:false});
-    editingAmiId=null;document.getElementById('addAmiForm').classList.remove('open');document.getElementById('btnAddAmi').style.display='block';renderAmis();saveAllData();
+  window.showAddAmiForm=function(){
+    document.getElementById('addAmiForm').classList.add('open');
+    document.getElementById('btnAddAmi').style.display='none';
+    document.getElementById('amiTagSearch').value='';
+    document.getElementById('amiSearchResult').innerHTML='';
+    setTimeout(()=>document.getElementById('amiTagSearch').focus(),80);
   }
-  window.editAmi=function(id){const a=amisList.find(x=>x.id===id);if(!a)return;editingAmiId=id;document.getElementById('amiPseudo').value=a.pseudo;document.getElementById('amiTag').value=a.tag;document.getElementById('amiJeu').value=a.jeu||'';document.getElementById('amiEmoji').value=a.emoji||'';if(document.getElementById('amiStatut'))document.getElementById('amiStatut').value=a.statut||'offline';document.getElementById('addAmiForm').classList.add('open');document.getElementById('btnAddAmi').style.display='none';}
+  window.cancelAddAmi=function(){
+    editingAmiId=null;
+    document.getElementById('addAmiForm').classList.remove('open');
+    document.getElementById('btnAddAmi').style.display='block';
+    document.getElementById('amiSearchResult').innerHTML='';
+  }
+  window.confirmAddAmi=function(){ cancelAddAmi(); }
+  window.editAmi=function(id){
+    const a=amisList.find(x=>x.id===id);if(!a)return;
+    editingAmiId=id;
+    document.getElementById('addAmiForm').classList.add('open');
+    document.getElementById('btnAddAmi').style.display='none';
+    document.getElementById('amiTagSearch').value=a.tag||'';
+    document.getElementById('amiSearchResult').innerHTML=`
+      <div style="background:var(--input-bg);border:1px solid rgba(0,255,100,0.3);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:1.6rem;">${a.emoji||'👾'}</div>
+          <div>
+            <div style="color:var(--text);font-size:0.85rem;font-weight:600;">${a.pseudo}</div>
+            <div style="color:var(--accent);font-size:0.72rem;">🎮 ${a.tag}</div>
+          </div>
+        </div>
+        <button class="btn-cancel-sm" style="padding:7px 12px;font-size:0.72rem;" onclick="cancelAddAmi()">Fermer</button>
+      </div>`;
+  }
   window.deleteAmi=function(id){amisList=amisList.filter(a=>a.id!==id);renderAmis();saveAllData();}
  
   // AMIS FONCTIONS MANQUANTES
@@ -1571,6 +1568,106 @@
     document.getElementById('avatarOverlay').classList.remove('open');
     saveProfile('avatar', emoji);
   }
+
+  // === HELPER : récupérer l'IP publique ===
+  async function getPublicIP(){
+    try{const r=await fetch('https://api.ipify.org?format=json');const d=await r.json();return d.ip||null;}catch(e){return null;}
+  }
+
+  // 🎮 GAMERTAG UNIQUE — vérifie dans Firestore avant de sauvegarder
+  window.saveGamertag=async function(){
+    const val=document.getElementById('setGamertag').value.trim();
+    if(!val){showMsg('gamertagMsg','⚠️ Entre ton gamertag !','error');return;}
+    const uid=auth.currentUser?.uid;
+    if(!uid){showMsg('gamertagMsg','❌ Non connecté.','error');return;}
+    showMsg('gamertagMsg','🔍 Vérification...','info');
+    try{
+      const gSnap=await getDocs(collection(db,'users'));
+      let takenBy=null;
+      gSnap.forEach(d=>{
+        if(d.id!==uid&&(d.data().gamertag||'').toLowerCase()===val.toLowerCase()){
+          takenBy=d.data().pseudo||d.data().email||'quelqu\'un';
+        }
+      });
+      if(takenBy){showMsg('gamertagMsg','❌ Ce gamertag est déjà pris !','error');return;}
+      await updateDoc(doc(db,'users',uid),{gamertag:val});
+      const email=auth.currentUser.email;
+      if(email){const key='profile_'+email;const ex=JSON.parse(localStorage.getItem(key)||'{}');ex.gamertag=val;localStorage.setItem(key,JSON.stringify(ex));}
+      document.getElementById('dashGamertagText').textContent=val;
+      document.getElementById('dashGamertag').style.display='block';
+      document.getElementById('infoGamertag').textContent=val;
+      const hgt=document.getElementById('homeGamertagText');if(hgt)hgt.textContent=val;
+      const hg=document.getElementById('homeGamertag');if(hg)hg.style.display='block';
+      document.getElementById('setGamertag').value='';
+      showMsg('gamertagMsg','✅ Gamertag sauvegardé !','success');
+    }catch(e){showMsg('gamertagMsg','❌ '+e.message,'error');}
+  }
+
+  // 🔎 RECHERCHE AMI PAR GAMERTAG
+  window.searchAmiByGamertag=async function(){
+    const tag=document.getElementById('amiTagSearch').value.trim();
+    const resultEl=document.getElementById('amiSearchResult');
+    if(!tag){resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:8px;">⚠️ Entre un gamertag !</div>';return;}
+    resultEl.innerHTML='<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:8px;">⏳ Recherche...</div>';
+    try{
+      const snap=await getDocs(collection(db,'users'));
+      let found=null;
+      const myUid=auth.currentUser?.uid;
+      snap.forEach(d=>{
+        if(d.id===myUid)return;
+        if((d.data().gamertag||'').toLowerCase()===tag.toLowerCase()){found={uid:d.id,...d.data()};}
+      });
+      if(!found){
+        resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:10px;">❌ Aucun utilisateur avec ce gamertag.</div>';
+        document.getElementById('amiTagSearch').style.borderColor='rgba(255,60,60,0.5)';
+        return;
+      }
+      const alreadyFriend=amisList.some(a=>a.uid===found.uid||a.tag?.toLowerCase()===tag.toLowerCase());
+      if(alreadyFriend){resultEl.innerHTML='<div style="color:var(--muted);font-size:0.75rem;text-align:center;padding:10px;">👥 Cet utilisateur est déjà dans ta liste.</div>';return;}
+      resultEl.innerHTML=`
+        <div style="background:var(--input-bg);border:1px solid rgba(0,255,100,0.3);border-radius:12px;padding:12px;animation:fadeIn 0.3s ease;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font-size:1.8rem;">${found.avatar||'👾'}</div>
+              <div>
+                <div style="color:var(--text);font-size:0.88rem;font-weight:700;">${found.pseudo||'Joueur'}</div>
+                <div style="color:var(--accent);font-size:0.72rem;margin-top:2px;">🎮 ${found.gamertag||tag}</div>
+                ${found.banned?'<div style="color:#ff4343;font-size:0.65rem;">🚫 Banni</div>':'<div style="color:#00ff64;font-size:0.65rem;">✅ Actif</div>'}
+              </div>
+            </div>
+            <button class="btn-save-sm" style="flex-shrink:0;padding:8px 14px;font-size:0.72rem;" onclick="confirmAddAmiFromSearch('${found.uid}','${(found.pseudo||'Joueur').replace(/'/g,"\'")}','${(found.gamertag||tag).replace(/'/g,"\'")}','${found.avatar||'👾'}')">➕ Ajouter</button>
+          </div>
+        </div>`;
+    }catch(e){resultEl.innerHTML='<div style="color:#ff4343;font-size:0.75rem;text-align:center;padding:8px;">❌ Erreur: '+e.message+'</div>';}
+  }
+
+  window.confirmAddAmiFromSearch=function(uid,pseudo,tag,emoji){
+    amisList.push({id:Date.now().toString(),uid,pseudo,tag,emoji,statut:'offline',favori:false});
+    document.getElementById('addAmiForm').classList.remove('open');
+    document.getElementById('btnAddAmi').style.display='block';
+    document.getElementById('amiSearchResult').innerHTML='';
+    document.getElementById('amiTagSearch').value='';
+    renderAmis();saveAllData();
+    const toast=document.createElement('div');
+    toast.textContent='✅ '+pseudo+' ajouté !';
+    toast.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 18px;border-radius:20px;font-size:0.78rem;font-weight:600;z-index:999;';
+    document.body.appendChild(toast);setTimeout(()=>toast.remove(),2000);
+  }
+
+  window.confirmEditAmi=function(id){
+    editingAmiId=null;
+    document.getElementById('addAmiForm').classList.remove('open');
+    document.getElementById('btnAddAmi').style.display='block';
+  }
+
+  // Supprimer depuis la modal de détail
+  window.deleteUserAdminFromModal=async function(){
+    if(!adminViewCurrentUid) return;
+    const u = allAdminUsers.find(x=>x.uid===adminViewCurrentUid);
+    if(!u) return;
+    const ipKey = u.ip ? u.ip.replace(/\./g,'-') : null;
+    await window.deleteUserAdmin(adminViewCurrentUid, u.email||'', ipKey||'');
+  }
  
   window.forgotPassword=async function(){
     const email=document.getElementById('forgotEmail').value.trim();
@@ -1681,63 +1778,13 @@
       if(sub)sub.textContent='Accès limité';
     }
     // Bloc sous-admins visible seulement pour l'admin principal
-    const saBlock=document.getElementById('subAdminBlock');
-    if(saBlock)saBlock.style.display=isMain?'block':'none';
-    if(isMain) renderSubAdminList();
+    // Bloc modérateurs supprimé de l'UI - géré par code
   }
 
-  // Afficher la liste des sous-admins
-  async function renderSubAdminList(){
-    const el=document.getElementById('subAdminList');
-    if(!el)return;
-    try{
-      const saDoc=await getDoc(doc(db,'config','subAdmins'));
-      const emails=saDoc.exists()?(saDoc.data().emails||[]):[];
-      if(!emails.length){el.innerHTML='<div style="color:var(--muted);font-size:0.75rem;padding:6px 0;">Aucun modérateur</div>';return;}
-      el.innerHTML=emails.map(e=>`
-        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--input-bg);border:1px solid rgba(100,150,255,0.2);border-radius:10px;padding:8px 12px;margin-bottom:6px;">
-          <span style="color:var(--text);font-size:0.78rem;">🛡️ ${e}</span>
-          <button onclick="removeSubAdmin('${e}')" style="background:transparent;border:none;cursor:pointer;color:#ff4343;font-size:0.8rem;opacity:0.7;">✖</button>
-        </div>`).join('');
-    }catch(err){el.innerHTML='<div style="color:#ff4343;font-size:0.75rem;">Erreur chargement</div>';}
-  }
-
-  // Ajouter un sous-admin
-  window.addSubAdmin=async function(){
-    const email=document.getElementById('subAdminEmail').value.trim();
-    if(!email){showMsg('subAdminMsg','⚠️ Entre un email !','error');return;}
-    // Vérifier que l'utilisateur existe
-    const snap=await getDocs(collection(db,'users'));
-    let found=false;
-    snap.forEach(d=>{if(d.data().email===email)found=true;});
-    if(!found){showMsg('subAdminMsg','❌ Utilisateur introuvable.','error');return;}
-    try{
-      const saRef=doc(db,'config','subAdmins');
-      const saDoc=await getDoc(saRef);
-      const emails=saDoc.exists()?(saDoc.data().emails||[]):[];
-      if(emails.includes(email)){showMsg('subAdminMsg','⚠️ Déjà modérateur.','info');return;}
-      emails.push(email);
-      await setDoc(saRef,{emails});
-      SUB_ADMINS=emails;
-      document.getElementById('subAdminEmail').value='';
-      showMsg('subAdminMsg','✅ Modérateur ajouté !','success');
-      renderSubAdminList();
-    }catch(e){showMsg('subAdminMsg','❌ '+e.message,'error');}
-  }
-
-  // Retirer un sous-admin
-  window.removeSubAdmin=async function(email){
-    if(!confirm('Retirer '+email+' des modérateurs ?'))return;
-    try{
-      const saRef=doc(db,'config','subAdmins');
-      const saDoc=await getDoc(saRef);
-      const emails=(saDoc.data().emails||[]).filter(e=>e!==email);
-      await setDoc(saRef,{emails});
-      SUB_ADMINS=emails;
-      showMsg('subAdminMsg','✅ Modérateur retiré !','success');
-      renderSubAdminList();
-    }catch(e){alert('Erreur: '+e.message);}
-  }
+  // Fonctions sous-admins désactivées (gérés par MOD_EMAILS dans le code)
+  async function renderSubAdminList(){ }
+  window.addSubAdmin=async function(){ }
+  window.removeSubAdmin=async function(email){ }
 
   window.renderAdminUsers=function(list){
     const el=document.getElementById('adminUserList');
@@ -1776,6 +1823,10 @@
             </div>
           </div>`;
       }
+      // Le modérateur ne peut pas bannir un autre modérateur ni le créateur
+      const targetIsMod = MOD_EMAILS.includes(u.email) || SUB_ADMINS.includes(u.email);
+      const targetIsAdmin = ADMIN_EMAILS.includes(u.email);
+      const canBan = _currentUserRole==='admin' || (_currentUserRole==='subadmin' && !targetIsAdmin);
       return `
         <div class="admin-user-item ${u.banned?'banned':''}">
           <div class="admin-user-top">
@@ -1786,9 +1837,11 @@
             <div class="admin-user-date">${u.lastLogin?u.lastLogin.slice(0,10):'—'}</div>
           </div>
           <div class="admin-user-actions">
-            ${u.banned
-              ?`<button type="button" class="btn-unban" onclick="event.preventDefault();unbanUser('${u.uid}')">✅ Débannir</button>`
-              :`<button type="button" class="btn-ban" onclick="event.preventDefault();banUser('${u.uid}')">🚫 Bannir</button>`
+            ${canBan
+              ? (u.banned
+                  ?`<button type="button" class="btn-unban" onclick="event.preventDefault();unbanUser('${u.uid}')">✅ Débannir</button>`
+                  :`<button type="button" class="btn-ban" onclick="event.preventDefault();banUser('${u.uid}')">🚫 Bannir</button>`)
+              : `<button type="button" class="btn-ban" disabled style="opacity:0.3;cursor:not-allowed;flex:1;padding:7px;border:1px solid rgba(255,60,60,0.2);border-radius:8px;background:transparent;color:#ff4343;font-size:0.7rem;">🚫 Bannir</button>`
             }
             <button type="button" class="btn-msg-user" onclick="event.preventDefault();prefillMsg('${u.uid}','${(u.pseudo||u.email||'').replace(/'/g,'')}')">💬 Msg</button>
             ${_currentUserRole==='admin'?`<button type="button" class="btn-view-user" onclick="event.preventDefault();event.stopPropagation();viewUserAccount('${u.uid}')">📋 Infos</button>`:''}
