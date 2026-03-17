@@ -839,7 +839,7 @@
   }
  
   // AVATARS style Netflix
-  const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','🦄','🤖','👻','💀','🧙','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
+  const AVATARS = ['👾','🦊','🐺','🦁','🐯','🦅','🐉','❤️','🦄','🤖','👻','💀','🧙','🎁','🗡️','🥷','🧛','👽','🎃','🦸','🦹','🐸','🎭','🌙','⚡','🔥','🌊','🌟'];
   let selectedAvatar = '👾';
  
   window.openAvatarModal=function() {
@@ -1023,18 +1023,24 @@
     {icon:'🌍',name:'GTA V',status:'Open World',cat:'Open World'},
     {icon:'🕹️',name:'Roblox',status:'Multijoueur',cat:'Multijoueur'},
     {icon:'🏹',name:'Apex Legends',status:'Battle Royale',cat:'Battle Royale'},
-    {icon:'⚽',name:'FIFA 24',status:'Sport',cat:'Sport'},
+    {icon:'⚽',name:'FIFA',status:'Sport',cat:'Sport'},
     {icon:'🧠',name:'Among Us',status:'Social',cat:'Multijoueur'},
-    {icon:'🚀',name:'Starfield',status:'RPG Espace',cat:'RPG'},
+    {icon:'🚀',name:'Brawl Star',status:'Battle Royale Espace',cat:'Battle Royale'},
     {icon:'🗡️',name:'Elden Ring',status:'Action RPG',cat:'RPG'},
     {icon:'🎲',name:'Overwatch 2',status:'Hero Shooter',cat:'FPS'},
-    {icon:'🌲',name:'Rust',status:'Survie',cat:'Survie'},
-    {icon:'🎸',name:'Cyberpunk 2077',status:'Open World RPG',cat:'RPG'},
-    {icon:'🐺',name:'The Witcher 3',status:'RPG',cat:'RPG'},
-    {icon:'🏔️',name:'Hogwarts Legacy',status:'Action RPG',cat:'RPG'},
+    {icon:'🌲',name:'Clash Royal',status:'Survie',cat:'Multijoueur'},
+    {icon:'🎸',name:'Tik Tok',status:'Social',cat:'Social'},
+    {icon:'🐺',name:'Discord',status:'Social',cat:'Social'},
+    {icon:'🏔️',name:'Instagrame',status:'Social',cat:'Social'},
     {icon:'🎮',name:'Fall Guys',status:'Party Game',cat:'Multijoueur'},
+	{icon:'🏔️',name:'Pokemon Go',status:'Open World',cat:'Open World'},
+	{icon:'🧠️',name:'Manga.ios',status:'Social',cat:'Social'},
+	{icon:'🧠️',name:'Play Station',status:'Social',cat:'Social'},
+	{icon:'🚀️',name:'Netflix',status:'Social',cat:'Social'},
+	{icon:'🚀️',name:'Steam',status:'Social',cat:'Social'},
+	{icon:'🚀️',name:'Musique',status:'Social',cat:'Social'},
   ];
-  const CATS=['Tous','Battle Royale','FPS','RPG','Sport','Survie','MOBA','Open World','Multijoueur'];
+  const CATS=['Tous','Battle Royale','FPS','RPG','Sport','Survie','MOBA','Open World','Multijoueur','Social'];
   let currentCat='Tous';
   let gameSaves={},gameFavs={},currentGame=null,editingId=null;
   let _currentEmail='';
@@ -1509,7 +1515,7 @@
         const userDoc=await getDoc(doc(db,'users',result.user.uid));
         if(userDoc.exists()&&userDoc.data().banned){
           await signOut(auth);
-          showMsg('loginMsg','🚫 Ton compte a été banni.','error');
+          showMsg('loginMsg','🚫 Nique ta mére fis de pute.','error');
           return;
         }
       }catch(e){}
